@@ -3,8 +3,8 @@
     var DIMS = 32;
     var SIZE = 24;
 
-    var GW = DIMS*SIZE;
-    var GH = DIMS*SIZE;
+    var GW;
+    var GH;
 
     //-------------------------- VARS -------------------------//
 
@@ -20,14 +20,26 @@
     var isDown = false;
     var mouseLeft = false;
 
-    var drawMode = false;
+    var selected_tool = "move";
+    var stroke_size = 1;
+
+    var canvas;
+    var ctx;
+
+    var picture_id;
 
     var image;
 
     var picture = [];
 
+    var undo_states = [];
+
     var colors = [];
     var selectedColor = 1;
+
+    var updateTimeoutHandle;
+
+    var firstrun = true;
 
     //------------------------- LOGICZ ------------------------//
     
@@ -39,7 +51,7 @@
                 random = false;
 
                 if (random) picture[r].push( ((Math.random()<0.5)?0:((Math.random()<0.5)?1:((Math.random()<0.5)?2:((Math.random()<0.5)?3:4)))) );
-                else picture[r].push(0);
+                else picture[r].push(-1);
             }
         }
         return picture;
@@ -88,6 +100,36 @@
         flow(x,y);
     }
 
+    function savePicture () {
+        var currentState = [];
+
+        for (var r = 0; r < DIMS; ++r) {
+            currentState.push([]);
+            for (var c = 0; c < DIMS; ++c) {
+                currentState[r][c] = picture[r][c];
+            }
+        }
+
+        if (undo_states.length >= 25) {
+            undo_states.shift();
+        }
+
+        undo_states.push(currentState);
+    }
+
+    function undo() {
+        if (undo_states.length == 0) return;
+        var oldstate = undo_states.pop();
+
+        for (var r = 0; r < DIMS; ++r) {
+            for (var c = 0; c < DIMS; ++c) {
+                picture[r][c] = oldstate[r][c];
+            }
+        }
+
+        renderPicture();
+    }
+
     //------------------------- RENDER ------------------------//
 
     function zoomPicture(delta) {
@@ -123,8 +165,11 @@
                 var lOffset = c * SIZE;
                 var tOffset = r * SIZE;
 
-                ctx.fillStyle = colors[picture[r][c]];
-                ctx.fillRect(lOffset, tOffset, SIZE+1, SIZE+1); // +1 cuz zoom
+                if (picture[r][c] !== -1) {
+                    ctx.fillStyle = colors[picture[r][c]];
+                    ctx.fillRect(lOffset, tOffset, SIZE+1, SIZE+1); // +1 cuz zoom
+                }
+                
 
                 if (grid_on) {
                     ctx.strokeStyle = "rgba(100,100,100,0.5)";
@@ -137,7 +182,7 @@
 
         ctx.save();
             ctx.imageSmoothingEnabled = false;
-            ctx.globalAlpha = 0.4;
+            ctx.globalAlpha = 0.5;
             ctx.drawImage(image, 0, 0, GW, GH);
         ctx.restore()
 
@@ -145,132 +190,317 @@
     }
 
     function initColorButtons() {
+        if ($("#colorContainer").is(":empty") == false) {
+            $("#colorContainer").empty();
+        }
+
         for (var i = 0; i < colors.length; i++) {
-            var colorButton = $('<input type="button" value="' + colors[i] + '" id = "btn_' + i + '"/>');
+            var colorButton = $('<input type="button" \
+                                        class="btn btn-default colorbtn" \
+                                        style="background-color:'+ colors[i] +' !important" \
+                                        id = "btn_' + i + '"/>'
+                                );
             $("#colorContainer").append(colorButton);
             $("#btn_"+i).click(function() {
                 selectedColor = parseInt(this.id.replace( /^\D+/g, ''));
-                drawMode = true;
+                if (selected_tool == "move") {
+                    selected_tool = "freehand";
+
+                    $('.strokeContainer').css({display:"block"});
+                }
                 console.log("using color " + colors[selectedColor])
             })
         }
     }
 
-    // -------------------- MUH WEBSOCKETS --------------------//
+    //--------------------- EVENT HANDLERS --------------------//
+    function splotchCircle(tile, r) {
+        for (var i = -(r-1); i <= (r-1); i++) {
+            for (var j = -(r-1); j <= (r-1); j++) {
+                a = tile.r + i;
+                b = tile.c + j;
 
-    function getColors () {
-        return ["white","lightblue","pink","lightgreen","black"];
+                if (Math.sqrt(i*i + j*j) <= (r-1)) {
+                    
+                    try {
+                        picture[a][b] = selectedColor;
+                    } catch (e) {}
+                }
+            }
+        }
+        renderPicture();
     }
 
-    function getImage () {
+    function addDrawEventHandlers () {
+        $('#drawingboard').mousedown(function (e) {
+            isDown = true;
+            
+            // Move Mode
+            if (selected_tool == "move") {
+                pX = e.pageX;
+                pY = e.pageY;
+            }
+
+            // Freehand Mode
+            if (selected_tool == "freehand") {
+                // save canvas state at start of fill
+                savePicture();
+
+                var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
+
+                if (stroke_size == 1) {
+                    if (picture[tile.r][tile.c] != selectedColor) {
+                        picture[tile.r][tile.c] = selectedColor;
+                        renderPicture();
+                    }
+                } else splotchCircle(tile, stroke_size)
+            }
+
+            // Fill Mode
+            if (selected_tool == "fill") {
+                // save canvas state at start of fill
+                savePicture();
+
+                var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
+
+                if (picture[tile.r][tile.c] != selectedColor) {
+                    fill(picture, tile.r, tile.c, selectedColor);
+                    renderPicture();
+                }
+            }
+        }).mouseup(function (e) {
+            isDown = false;
+            updatePicture();
+        }).mouseleave(function (e) {
+            if (isDown) mouseLeft = true;
+            
+            isDown = false;
+        }).mouseenter(function (e) {
+            if (mouseLeft) isDown = true;
+
+            mouseLeft = false;
+
+        }).mousemove(function (e) {
+            // Move Mode
+            if (selected_tool == "move") {
+                if (isDown) panPicture(e);
+            }
+
+            // Draw Mode
+            if (selected_tool == "freehand" && isDown) {
+                var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
+
+                if (stroke_size == 1) {
+                    if (picture[tile.r][tile.c] != selectedColor) {
+                        picture[tile.r][tile.c] = selectedColor;
+                        renderPicture();
+                    }
+                } else splotchCircle(tile, stroke_size)
+            }
+        });
+
+        $(document).mouseup(function (e) {
+            mouseLeft = false;
+        });
+
+        // Mousewheel
+        function wheel(event) {
+            // Move Mode
+            if (selected_tool == "move"){
+                var delta = 0;
+                if (!event) event = window.event;
+                if (event.wheelDelta) {
+                    delta = event.wheelDelta / 120;
+                } else if (event.detail) {
+                    delta = -event.detail / 3;
+                }
+                if (delta) {
+                    zoomPicture(delta);
+                }
+                if (event.preventDefault) {
+                    event.preventDefault();
+                }
+                event.returnValue = false;
+            }
+
+            // Draw Mode
+            if (selected_tool == "freehand") {
+
+            }
+        }
+
+        if (window.addEventListener) {
+            window.addEventListener('DOMMouseScroll', wheel, false);
+        }
+        canvas.onmousewheel = wheel;
+
+
+        // Buttons
+        $("#btn_draw").click(function(){
+            selected_tool = "freehand";
+
+            $('.strokeContainer').css({display:"block"});
+
+            console.log("freehand");
+        });
+        $("#btn_fill").click(function(){
+            selected_tool = "fill";
+
+            $('.strokeContainer').css({display:"none"});
+
+            console.log("fill");
+        });
+        $("#btn_move").click(function(){
+            selected_tool = "move";
+
+            $('.strokeContainer').css({display:"none"});
+
+            console.log("move");
+        });
+
+        $("#btn_stroke_sm").click(function(){
+            stroke_size = 1;
+        });
+        $("#btn_stroke_md").click(function(){
+            stroke_size = 2;
+        });
+        $("#btn_stroke_lg").click(function(){
+            stroke_size = 3;
+        });
+
+        $("#btn_toggle_grid").click(function(){
+            grid_on = !grid_on;
+            console.log("grid toggled " + ((grid_on)?"on":"off"));
+            renderPicture();
+        });
+        $("#btn_undo").click(function(){
+            undo();
+
+            console.log("undone");
+        });
+        $("#btn_clear").click(function(){
+            savePicture();
+            picture = genEmptyPicture();
+            renderPicture();
+
+            console.log("cleared");
+        });
+
+        $("#btn_done").click(sendFinishedPicture);
+    }
+
+    $( window ).resize(function() {
+        SIZE = $(".container").width() / DIMS;
+
+        GW = DIMS*SIZE;
+        GH = DIMS*SIZE;
+
+        // set correct dimensions
+        canvas.width = DIMS*SIZE;
+        canvas.height = DIMS*SIZE;
+
+        renderPicture();
+    });
+
+    //--------------- MUH WEBSAHKETS -------------------//
+
+    var socket = io.connect('http://192.168.43.150:8080/');
+
+    function updatePicture() {
+        // 10/10 error handling, would be trash programmer again
+        for (var i = 0; i < picture.length; i++) {
+            picture[i] = picture[i].slice(0, DIMS);
+        }
+        picture = picture.slice(0,DIMS);
+
+        // in your click function, call clearTimeout
+        window.clearTimeout(updateTimeoutHandle);
+        updateTimeoutHandle = window.setTimeout(function(){
+            // send this bed boi
+            socket.emit("updatePicture", {
+                _id:picture_id,
+                pixels:picture
+            });
+            console.log("updated");
+        }, 1000);
+    }
+
+    function sendFinishedPicture() {
+        // 10/10 error handling, would be trash programmer again
+        for (var i = 0; i < picture.length; i++) {
+            picture[i] = picture[i].slice(0, DIMS);
+        }
+        picture = picture.slice(0,DIMS);
+
+        socket.emit("savePicture", {
+            _id:picture_id,
+            pixels:picture
+        });
+        console.log("sent");
+
+        $(".mainContainer").css({display:"block"});
+        $(".drawContainer").css({display:"none"});
+    }
+
+    function getImage (url) {
         var image = new Image();
-        image.src = 'tst.png';
+        image.src = url;
         image.onload = function () {
             renderPicture();
         }
         return image;
     }
 
-    //--------------------- EVENT HANDLERS --------------------//
-
-    $('#drawingboard').mousedown(function (e) {
-        isDown = true;
-        
-        // Move Mode
-        if (!drawMode) {
-            pX = e.pageX;
-            pY = e.pageY;
-        }
-
-        // Draw Mode
-        if (drawMode) {
-            var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
-
-            if (picture[tile.r][tile.c] != selectedColor) {
-                picture[tile.r][tile.c] = selectedColor;
-                renderPicture();
-            }
-        }
-
-    }).mouseup(function (e) {
-        isDown = false;
-    }).mouseleave(function (e) {
-        
-        if (isDown) mouseLeft = true;
-        
-        isDown = false;
-    }).mouseenter(function (e) {
-
-        if (mouseLeft) isDown = true;
-
-        mouseLeft = false;
-
-    }).mousemove(function (e) {
-        // Move Mode
-        if (!drawMode) {
-            if (isDown) panPicture(e);
-        }
-
-        // Draw Mode
-        if (drawMode && isDown) {
-            var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
-
-            if (picture[tile.r][tile.c] != selectedColor) {
-                picture[tile.r][tile.c] = selectedColor;
-                renderPicture();
-            }
-        }
+    socket.on('serverError', function (picture_obj) {
+        alert("THERE WAS A BACKEND SERVER ERROR BRUH");
     });
 
-    $(document).mouseup(function (e) {
-        mouseLeft = false;
-    });
+    socket.on('newPicture', function (picture_obj) {
+        console.log('Picture: ', picture_obj);
 
-    // Mousewheel
-    function wheel(event) {
-        // Move Mode
-        if (!drawMode){
-            var delta = 0;
-            if (!event) event = window.event;
-            if (event.wheelDelta) {
-                delta = event.wheelDelta / 120;
-            } else if (event.detail) {
-                delta = -event.detail / 3;
-            }
-            if (delta) {
-                zoomPicture(delta);
-            }
-            if (event.preventDefault) {
-                event.preventDefault();
-            }
-            event.returnValue = false;
-        }
+        // Init canvas context
+        canvas = document.getElementById('drawingboard');
+        ctx = canvas.getContext("2d");
 
-        // Draw Mode
-        if (drawMode) {
+        // Find a nice size for the boxes
+        SIZE = $(".container").width() / DIMS;
 
-        }
-    }
+        GW = DIMS*SIZE;
+        GH = DIMS*SIZE;
 
-    if (window.addEventListener) {
-        window.addEventListener('DOMMouseScroll', wheel, false);
-    }
-    window.onmousewheel = document.onmousewheel = wheel;
+        // set correct dimensions
+        canvas.width = DIMS*SIZE;
+        canvas.height = DIMS*SIZE;
 
+        // Init colors and color buttons
+        colors = picture_obj.colors;
+        initColorButtons();
 
-    // Buttons
-    $("#btn_draw").click(function(){
-        drawMode = true;
-        console.log("draw mode on");
-    });
-    $("#btn_move").click(function(){
-        drawMode = false;
-        console.log("draw mode off");
-    });
-    $("#btn_toggle_grid").click(function(){
-        grid_on = !grid_on;
-        console.log("grid toggled " + ((grid_on)?"on":"off"));
+        // load image
+        image = getImage('http://192.168.43.150:8080' + picture_obj.imageURL);
+
+        picture_id = picture_obj._id;
+
+        // generate / load picture
+        DIMS = picture_obj.size;
+        if (picture_obj.pixels == null) picture = genEmptyPicture(DIMS);
+        else picture = picture_obj.pixels;
+
+        // Inital render
         renderPicture();
+
+        // Add event handlers
+        if (firstrun) addDrawEventHandlers();
+
+        // show the board
+        $(".not-drawing").css({display:"none"});
+        $(".drawContainer").css({display:"block"});
+
+        firstrun = false;
+    })
+
+    $(".btn_start").click(function(){
+        socket.emit('requestPicture');
     });
 
     //------------------------- MAGIC -------------------------//
@@ -289,7 +519,7 @@
         while(currentElement = currentElement.offsetParent)
 
         canvasX = event.pageX - totalOffsetX;
-        canvasY = event.pageY - totalOffsetY;
+        canvasY = event.pageY - totalOffsetY - $(window).scrollTop();
 
         return {x:canvasX, y:canvasY}
     }
@@ -297,25 +527,12 @@
 
     //-------------------------- MAIN -------------------------//
 
-    // Init canvas context
-    var canvas = document.getElementById('drawingboard');
-    var ctx = canvas.getContext("2d");
-
-    canvas.width = DIMS*SIZE;
-    canvas.height = DIMS*SIZE;
-
-    // Init colors and color buttons
-    colors = getColors()
-    initColorButtons();
-
-    // load image
-    image = getImage()
-
-    // generate / load picture
-    picture = genEmptyPicture(DIMS);
-
-    // Inital render
-    renderPicture();
-
     console.log("gethype");
+
+    if (!localStorage.returning) {
+        localStorage.returning = true;
+        $(".startContainer").css({display:"block"});
+    } else {
+        $(".mainContainer").css({display:"block"});
+    }
 // })();

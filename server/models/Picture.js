@@ -3,9 +3,7 @@ import db from '../db'
 import timestamps from 'mongoose-timestamp'
 
 const pictureSchema = new Schema({
-  pixels: [
-    [Number]
-  ],
+  pixels: String, // JSON serialized 2d array
   x: Number,
   y: Number,
   done: {

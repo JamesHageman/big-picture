@@ -1,6 +1,8 @@
 import mongoose from 'mongoose'
 
-mongoose.connect('mongodb://localhost/big-picture')
+export const url = 'mongodb://localhost/big-picture'
+
+mongoose.connect(url)
 
 const db = mongoose.connection
 

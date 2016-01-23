@@ -3,6 +3,8 @@ import Image from './models/Image'
 
 const ptStr = (x, y) => x + ',' + y
 
+const PICTURE_SIZE = 32
+
 const createPicture = ({
   image,
   x,
@@ -13,7 +15,7 @@ const createPicture = ({
     y: y,
     image: image._id,
     done: false,
-    pixels: []
+    pixels: null
   })
 
   return p.save()
@@ -23,12 +25,18 @@ const addImageData = (picture, imageObj) => {
   const {
     x,
     y,
-    image
+    _id,
+    pixels
   } = picture
 
-  let p = picture.toJSON()
-  p.imageURL = `/image/${image}/${x}/${y}`
+  let p = {}
+  p.imageURL = `/image/${imageObj._id}/${x}/${y}`
   p.colors = imageObj.colors
+  p.size = PICTURE_SIZE
+  p._id = _id
+  p.pixels = JSON.parse(pixels)
+  p.x = x
+  p.y = y
   return p
 }
 
@@ -45,70 +53,131 @@ const overwrite = (picture, replacement) => {
     .then(() => replacement)
 }
 
-export function createNewPicture(imageId) {
+function getRandomImage() {
+  return Image.findOne()
+    .exec()
+}
+
+export function createNewPicture() {
+  return getRandomImage().then(image => {
+    return Promise.all([
+      Picture.find({
+        image: image._id,
+        overwritten: false
+      })
+      .sort({
+        createdAt: 'asc'
+      }).exec(),
+      image
+    ])
+  }).then(([currentPictures, image]) => {
+    const takenMap = {}
+
+    currentPictures.forEach(picture => {
+      takenMap[ptStr(picture.x, picture.y)] = picture
+    })
+
+    // look for untaken pictures
+    for (let y = 0; y < image.rows; y++) {
+      for (let x = 0; x < image.columns; x++) {
+        if (!takenMap[ptStr(x, y)]) {
+          return Promise.all([
+            createPicture({
+              x,
+              y,
+              image
+            }),
+            image
+          ])
+        }
+      }
+    }
+
+    // look for pictures that are not 'done' and were started
+    // >10 mins ago
+
+    for (let i = 0; i < currentPictures.length; i++) {
+      const picture = currentPictures[i]
+
+      if (canOverwritePicture(picture)) {
+        return Promise.all([
+          createPicture({
+            x: picture.x,
+            y: picture.y,
+            image: image
+          }).then(replacement => {
+            return overwrite(picture, replacement)
+          }),
+
+          image
+        ])
+      }
+    }
+
+    return Promise.all([null, image])
+  }).then(([picture, image]) => {
+    if (picture) {
+      return addImageData(picture, image)
+    }
+
+    return picture
+  }, err => {
+    throw err
+  })
+}
+
+export function getPicture(id) {
+  return Picture.findById(id)
+    .populate('image')
+    .exec()
+    .then(picture => {
+      if (!picture) return null
+      return addImageData(picture, picture.image)
+    })
+}
+
+export function savePicture({ _id, pixels, done = false }) {
+  return Picture.findById(_id).exec()
+    .then(picture => {
+      if (pixels.length !== PICTURE_SIZE) {
+        throw new Error(
+          `expected ${PICTURE_SIZE} rows, got ${pixels.length}`
+        )
+      }
+
+      pixels.forEach((row, i) => {
+        if (row.length !== PICTURE_SIZE) {
+          throw new Error(
+            `expected row ${i} to have ${PICTURE_SIZE} elements,
+            got ${row.length}`
+          )
+        }
+      })
+
+      picture.pixels = JSON.stringify(pixels)
+      picture.done = done
+      // picture.markModified('pixels')
+
+      console.log('saving picutre', _id, pixels.length)
+      return picture.save()
+    })
+}
+
+export function getFullImage(imageId) {
   return Promise.all([
+    Image.findById(imageId).exec(),
     Picture.find({
       image: imageId,
       overwritten: false
-    }).exec(),
-    Image.findById(imageId).exec()
-  ])
-    .then(([currentPictures, image]) => {
-      const takenMap = {}
-
-      currentPictures.forEach(picture => {
-        takenMap[ptStr(picture.x, picture.y)] = picture
-      })
-
-      // look for untaken pictures
-      for (let y = 0; y < image.rows; y++) {
-        for (let x = 0; x < image.columns; x++) {
-          if (!takenMap[ptStr(x, y)]) {
-            return Promise.all([
-              createPicture({
-                x,
-                y,
-                image
-              }),
-              image
-            ])
-          }
-        }
-      }
-
-      // look for pictures that are not 'done' and were started
-      // >10 mins ago
-
-      for (let y = 0; y < image.rows; y++) {
-        for (let x = 0; x < image.columns; x++) {
-          const picture = takenMap[ptStr(x, y)]
-
-          if (canOverwritePicture(picture)) {
-            return Promise.all([
-              createPicture({
-                x: picture.x,
-                y: picture.y,
-                image: image
-              }).then(replacement => {
-                return overwrite(picture, replacement)
-              }),
-
-              image
-            ])
-          }
-        }
-      }
-
-      return Promise.all([null, image])
-    }, err => {
-      throw err
-    }).then(([picture, image]) => {
-      if (picture) {
-        return addImageData(picture, image)
-      }
-
-      return picture
-    }, err => {
-      throw err
     })
+      .sort('x y')
+      .select('pixels x y _id done')
+      .exec()
+  ]).then(([image, pictures]) => {
+    return {
+      image,
+      pictures: pictures.map(picture => addImageData(picture, image)),
+      size: PICTURE_SIZE
+    }
+  })
 }
