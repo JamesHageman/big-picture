@@ -1,0 +1,48 @@
+<html>
+<head>
+
+</head>
+<body>
+
+  <div ng-app="app">
+    <div ng-controller="NewImageCtrl">
+      <form name="newImageForm">
+        <div>
+          <label>
+            Columns: <input type="number" ng-model="columns" name="columns"/>
+          </label>
+        </div>
+        <div>
+          <label>
+            Rows: {{ columns * 2 }}
+          </label>
+        </div>
+        <div>
+          <button ngf-select ng-model="image" ngf-pattern="'image/*'"
+            ngf-accept="'image/*'">
+            Select image
+          </button>
+          <div ng-if="image">
+            {{ image.name }}
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.9/angular.min.js"></script>
+  <script src="https://npmcdn.com/ng-file-upload@11.2.2/dist/ng-file-upload-all.js"></script>
+  <script>
+    var app = angular.module('app', ['ngFileUpload'])
+
+    app.controller('NewImageCtrl', function ($scope) {
+      $scope.columns = 8
+      $scope.$watch('image', function () {
+        console.log($scope.image)
+        debugger;
+      })
+    });
+
+  </script>
+</body>
+</html>

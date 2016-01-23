@@ -8,7 +8,7 @@ import { createNewPicture } from './picture'
 
 const app = express()
 
-app.use(express.static('/public'))
+app.use(express.static(path.join(__dirname, '/public')))
 
 app.get('/images', (req, res) => {
   Image.find()

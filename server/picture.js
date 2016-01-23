@@ -82,7 +82,6 @@ export function createNewPicture(imageId) {
       for (let y = 0; y < image.rows; y++) {
         for (let x = 0; x < image.columns; x++) {
           const picture = takenMap[ptStr(x, y)]
-          // TODO check 10 minute thingie
 
           if (canOverwritePicture(picture)) {
             return Promise.all([

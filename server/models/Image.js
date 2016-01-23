@@ -4,6 +4,7 @@ import timestamps from 'mongoose-timestamp'
 
 const imageSchema = new Schema({
   fileName: String,
+  friendlyName: String,
   width: Number,
   height: Number,
   colors: [String],
