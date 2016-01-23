@@ -4,9 +4,20 @@
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-    <canvas id="drawingboard">Sorry, looks like your browser doesn't support HTML5 Canvas!</canvas>
-    
-    <script src="js/fabric.min.js"></script>
+    <div class="container">
+        <div class="canvasContainer">
+            <canvas id="drawingboard">
+                Sorry, looks like your browser doesn't support HTML5 Canvas!
+            </canvas>
+        </div>
+        <div class="controls">
+            <button id="btn_draw">Draw</button>
+            <button id="btn_move">Move</button>
+            <br>
+            <button id="btn_toggle_grid">Toggle Grid</button>
+        </div>
+    </div>
+    <script src="js/jquery-2.2.0.min.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
