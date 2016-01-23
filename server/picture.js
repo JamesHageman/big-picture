@@ -19,11 +19,23 @@ const createPicture = ({
   return p.save()
 }
 
-const pictureTooOld = picture => {
+const addImageUrl = picture => {
+  const {
+    x,
+    y,
+    image
+  } = picture
+
+  let p = picture.toJSON()
+  p.imageURL = `/image/${image}/${x}/${y}`
+  return p
+}
+
+const canOverwritePicture = picture => {
   const now = Date.now()
   const time = 10 * 60 * 1000
 
-  return now - picture.createdAt > time
+  return !picture.done && now - picture.createdAt > time
 }
 
 const overwrite = (picture, replacement) => {
@@ -68,7 +80,7 @@ export function createNewPicture(imageId) {
           const picture = takenMap[ptStr(x, y)]
           // TODO check 10 minute thingie
 
-          if (picture.done === false && pictureTooOld(picture)) {
+          if (canOverwritePicture(picture)) {
             return createPicture({
               x: picture.x,
               y: picture.y,
@@ -81,6 +93,14 @@ export function createNewPicture(imageId) {
       }
 
       return Promise.resolve(null)
+    }, err => {
+      throw err
+    }).then(picture => {
+      if (picture) {
+        return addImageUrl(picture)
+      }
+
+      return picture
     }, err => {
       throw err
     })
