@@ -68,6 +68,26 @@
         };
     }
 
+    function fill(data, x, y, newValue) {
+        // get target value
+        var target = data[x][y];
+
+        function flow(x,y) {
+            // bounds check what we were passed
+            if (x >= 0 && x < data.length && y >= 0 && y < data[x].length) {
+                if (data[x][y] === target) {
+                    data[x][y] = newValue;
+                    flow(x-1, y);    // check up
+                    flow(x+1, y);    // check down
+                    flow(x, y-1);    // check left
+                    flow(x, y+1);    // check right
+                }
+            }
+        }
+
+        flow(x,y);
+    }
+
     //------------------------- RENDER ------------------------//
 
     function zoomPicture(delta) {
@@ -131,6 +151,7 @@
             $("#btn_"+i).click(function() {
                 selectedColor = parseInt(this.id.replace( /^\D+/g, ''));
                 drawMode = true;
+                console.log("using color " + colors[selectedColor])
             })
         }
     }
