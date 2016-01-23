@@ -14,6 +14,8 @@
         <div class="header">
             <h1>BIGpicture</h1>
         </div>
+
+        <!-- Draw View -->
         <div class="drawContainer">
             <div class="canvasContainer">
                 <canvas id="drawingboard">
@@ -59,16 +61,43 @@
                     <button class="btn btn-default" id="btn_undo">Undo</button>
                     <button class="btn btn-danger" id="btn_clear">Clear</button>
                 </div>
+                <h1>Colors:</h1>
                 <div id="colorContainer">
-                    <h1>Colors:</h1>
+                    <!-- Fill me up bae -->
                 </div>
                 <div class = "comContainer">
-                    <button class="btn btn-default" id="btn_save">save</button>
+                    <button class="btn btn-default" id="btn_done">Done!</button>
                 </div>
             </div>
         </div>
-        <div class="startContainer">
-            <button class="btn btn-default" id="btn_start">Start!</button>
+
+        <!-- First Time View -->
+        <div class="startContainer not-drawing">
+            <h1>Hi!</h1>
+            <h2>Welcome to BIGpicture!</h2>
+
+            <p>
+                When you're ready, press <b><em>Start!</em></b> to join countless others in contributing to an art project unlike any before!
+            </p>
+            <p>
+                We'll give you a little chunk of a picture, and you'll fill it in as best you can.
+                When you're done, press <b><em>Done!</em></b>, and you'll be able to see where you fit in on the BIGpicture
+            </p>
+            <button class="btn btn-default btn_start">Start!</button>
+        </div>
+
+        <!-- Returning User View -->
+        <div class="mainContainer not-drawing">
+            <h1>Welcome Back!</h1>
+
+            <p>
+                When you're ready, press <b><em>Start!</em></b> to join countless others in contributing to an art project unlike any before!
+            </p>
+            <p>
+                We'll give you a little chunk of a picture, and you'll fill it in as best you can.
+                When you're done, press <b><em>Done!</em></b>, and you'll be able to see where you fit in on the BIGpicture
+            </p>
+            <button class="btn btn-default btn_start">Start!</button>
         </div>
     </div>
     

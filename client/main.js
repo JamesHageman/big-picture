@@ -39,6 +39,8 @@
 
     var updateTimeoutHandle;
 
+    var firstrun = true;
+
     //------------------------- LOGICZ ------------------------//
     
     function genEmptyPicture() {
@@ -188,6 +190,10 @@
     }
 
     function initColorButtons() {
+        if ($("#colorContainer").is(":empty") == false) {
+            $("#colorContainer").empty();
+        }
+
         for (var i = 0; i < colors.length; i++) {
             var colorButton = $('<input type="button" \
                                         class="btn btn-default colorbtn" \
@@ -294,7 +300,6 @@
         });
 
         $(document).mouseup(function (e) {
-            updatePicture();
             mouseLeft = false;
         });
 
@@ -381,9 +386,7 @@
             console.log("cleared");
         });
 
-        $("#btn_save").click(function(){
-            
-        });
+        $("#btn_done").click(sendFinishedPicture);
     }
 
     $( window ).resize(function() {
@@ -418,8 +421,25 @@
                 _id:picture_id,
                 pixels:picture
             });
-            console.log("updated")
-        }, 2000);
+            console.log("updated");
+        }, 1000);
+    }
+
+    function sendFinishedPicture() {
+        // 10/10 error handling, would be trash programmer again
+        for (var i = 0; i < picture.length; i++) {
+            picture[i] = picture[i].slice(0, DIMS);
+        }
+        picture = picture.slice(0,DIMS);
+
+        socket.emit("savePicture", {
+            _id:picture_id,
+            pixels:picture
+        });
+        console.log("sent");
+
+        $(".mainContainer").css({display:"block"});
+        $(".drawContainer").css({display:"none"});
     }
 
     function getImage (url) {
@@ -470,14 +490,16 @@
         renderPicture();
 
         // Add event handlers
-        addDrawEventHandlers();
+        if (firstrun) addDrawEventHandlers();
 
         // show the board
-        $(".startContainer").css({display:"none"});
+        $(".not-drawing").css({display:"none"});
         $(".drawContainer").css({display:"block"});
+
+        firstrun = false;
     })
 
-    $("#btn_start").click(function(){
+    $(".btn_start").click(function(){
         socket.emit('requestPicture');
     });
 
@@ -506,4 +528,11 @@
     //-------------------------- MAIN -------------------------//
 
     console.log("gethype");
+
+    if (!localStorage.returning) {
+        localStorage.returning = true;
+        $(".startContainer").css({display:"block"});
+    } else {
+        $(".mainContainer").css({display:"block"});
+    }
 // })();
