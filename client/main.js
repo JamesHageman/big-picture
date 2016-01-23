@@ -20,11 +20,13 @@
     var isDown = false;
     var mouseLeft = false;
 
-    var drawMode = false;
+    var selected_tool = "move";
 
     var image;
 
     var picture = [];
+
+    var undo_states = [];
 
     var colors = [];
     var selectedColor = 1;
@@ -86,6 +88,37 @@
         }
 
         flow(x,y);
+    }
+
+    function savePicture () {
+        var currentState = [];
+
+        for (var r = 0; r < DIMS; ++r) {
+            currentState.push([]);
+            for (var c = 0; c < DIMS; ++c) {
+                currentState[r][c] = picture[r][c];
+            }
+        }
+
+        if (undo_states.length >= 25) {
+            undo_states.shift();
+        }
+
+        undo_states.push(currentState);
+        console.log(undo_states);
+    }
+
+    function undo() {
+        var oldstate = undo_states.pop();
+        console.log(oldstate);
+
+        for (var r = 0; r < DIMS; ++r) {
+            for (var c = 0; c < DIMS; ++c) {
+                picture[r][c] = oldstate[r][c];
+            }
+        }
+
+        renderPicture();
     }
 
     //------------------------- RENDER ------------------------//
@@ -150,7 +183,7 @@
             $("#colorContainer").append(colorButton);
             $("#btn_"+i).click(function() {
                 selectedColor = parseInt(this.id.replace( /^\D+/g, ''));
-                drawMode = true;
+                if (selected_tool == "move") selected_tool = "freehand";
                 console.log("using color " + colors[selectedColor])
             })
         }
@@ -177,13 +210,16 @@
         isDown = true;
         
         // Move Mode
-        if (!drawMode) {
+        if (selected_tool == "move") {
             pX = e.pageX;
             pY = e.pageY;
         }
 
-        // Draw Mode
-        if (drawMode) {
+        // Freehand Mode
+        if (selected_tool == "freehand") {
+            // save canvas state at start of fill
+            savePicture();
+
             var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
 
             if (picture[tile.r][tile.c] != selectedColor) {
@@ -192,6 +228,18 @@
             }
         }
 
+        // Fill Mode
+        if (selected_tool == "fill") {
+            // save canvas state at start of fill
+            savePicture();
+
+            var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
+
+            if (picture[tile.r][tile.c] != selectedColor) {
+                fill(picture, tile.r, tile.c, selectedColor);
+                renderPicture();
+            }
+        }
     }).mouseup(function (e) {
         isDown = false;
     }).mouseleave(function (e) {
@@ -207,12 +255,12 @@
 
     }).mousemove(function (e) {
         // Move Mode
-        if (!drawMode) {
+        if (selected_tool == "move") {
             if (isDown) panPicture(e);
         }
 
         // Draw Mode
-        if (drawMode && isDown) {
+        if (selected_tool == "freehand" && isDown) {
             var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
 
             if (picture[tile.r][tile.c] != selectedColor) {
@@ -229,7 +277,7 @@
     // Mousewheel
     function wheel(event) {
         // Move Mode
-        if (!drawMode){
+        if (selected_tool == "move"){
             var delta = 0;
             if (!event) event = window.event;
             if (event.wheelDelta) {
@@ -247,7 +295,7 @@
         }
 
         // Draw Mode
-        if (drawMode) {
+        if (selected_tool == "freehand") {
 
         }
     }
@@ -260,17 +308,30 @@
 
     // Buttons
     $("#btn_draw").click(function(){
-        drawMode = true;
-        console.log("draw mode on");
+        selected_tool = "freehand";
+
+        console.log("freehand");
+    });
+    $("#btn_fill").click(function(){
+        selected_tool = "fill";
+
+        console.log("fill");
     });
     $("#btn_move").click(function(){
-        drawMode = false;
-        console.log("draw mode off");
+        selected_tool = "move";
+
+        console.log("move");
     });
+
     $("#btn_toggle_grid").click(function(){
         grid_on = !grid_on;
         console.log("grid toggled " + ((grid_on)?"on":"off"));
         renderPicture();
+    });
+    $("#btn_undo").click(function(){
+        undo();
+
+        console.log("undone");
     });
 
     //------------------------- MAGIC -------------------------//

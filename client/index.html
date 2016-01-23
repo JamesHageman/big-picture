@@ -11,19 +11,23 @@
             </canvas>
         </div>
         <div class="controls">
-            <div class = "moveContainer">
-                <button id="btn_draw">Draw</button>
+            <div class = "modeContainer">
+                <button id="btn_draw">Free Draw</button>
+                <button id="btn_fill">Bucket</button>
                 <button id="btn_move">Move</button>
             </div>
             <div class = "renderOptsContainer">
                 <button id="btn_toggle_grid">Toggle Grid</button>
+                <button id="btn_undo">Undo</button>
             </div>
             <div id="colorContainer">
-                
+                <!-- Fill me -->
             </div>
         </div>
     </div>
+    
     <script src="js/jquery-2.2.0.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
