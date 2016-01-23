@@ -19,7 +19,7 @@ const createPicture = ({
   return p.save()
 }
 
-const addImageUrl = picture => {
+const addImageData = (picture, imageObj) => {
   const {
     x,
     y,
@@ -28,6 +28,7 @@ const addImageUrl = picture => {
 
   let p = picture.toJSON()
   p.imageURL = `/image/${image}/${x}/${y}`
+  p.colors = imageObj.colors
   return p
 }
 
@@ -63,11 +64,14 @@ export function createNewPicture(imageId) {
       for (let y = 0; y < image.rows; y++) {
         for (let x = 0; x < image.columns; x++) {
           if (!takenMap[ptStr(x, y)]) {
-            return createPicture({
-              x,
-              y,
+            return Promise.all([
+              createPicture({
+                x,
+                y,
+                image
+              }),
               image
-            })
+            ])
           }
         }
       }
@@ -81,23 +85,27 @@ export function createNewPicture(imageId) {
           // TODO check 10 minute thingie
 
           if (canOverwritePicture(picture)) {
-            return createPicture({
-              x: picture.x,
-              y: picture.y,
-              image: image
-            }).then(replacement => {
-              return overwrite(picture, replacement)
-            })
+            return Promise.all([
+              createPicture({
+                x: picture.x,
+                y: picture.y,
+                image: image
+              }).then(replacement => {
+                return overwrite(picture, replacement)
+              }),
+
+              image
+            ])
           }
         }
       }
 
-      return Promise.resolve(null)
+      return Promise.all([null, image])
     }, err => {
       throw err
-    }).then(picture => {
+    }).then(([picture, image]) => {
       if (picture) {
-        return addImageUrl(picture)
+        return addImageData(picture, image)
       }
 
       return picture
