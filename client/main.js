@@ -22,15 +22,17 @@
 
     var drawMode = false;
 
+    var image;
 
     var picture = [];
 
-    var colors = ["white","lightblue","pink","lightgreen","black"];
-    var selectedColor = 4;
+    var colors = [];
+    var selectedColor = 1;
 
     //------------------------- LOGICZ ------------------------//
     
     function genEmptyPicture() {
+        var picture = [];
         for (var r = 0; r < DIMS; ++r) {
             picture.push([]);
             for (var c = 0; c < DIMS; ++c) {
@@ -40,6 +42,7 @@
                 else picture[r].push(0);
             }
         }
+        return picture;
     } 
     
     /* returns {r:row, c:column} given mouse position of canvas */
@@ -94,6 +97,7 @@
         ctx.translate(gX, gY);
         ctx.scale(gScale, gScale);
 
+
         for (var r = 0; r < DIMS; ++r) {
             for (var c = 0; c < DIMS; ++c) {
                 var lOffset = c * SIZE;
@@ -109,6 +113,14 @@
                 }
             }
         }
+
+
+        ctx.save();
+            ctx.imageSmoothingEnabled = false;
+            ctx.globalAlpha = 0.4;
+            ctx.drawImage(image, 0, 0, GW, GH);
+        ctx.restore()
+
         ctx.restore();
     }
 
@@ -121,6 +133,21 @@
                 drawMode = true;
             })
         }
+    }
+
+    // -------------------- MUH WEBSOCKETS --------------------//
+
+    function getColors () {
+        return ["white","lightblue","pink","lightgreen","black"];
+    }
+
+    function getImage () {
+        var image = new Image();
+        image.src = 'tst.png';
+        image.onload = function () {
+            renderPicture();
+        }
+        return image;
     }
 
     //--------------------- EVENT HANDLERS --------------------//
@@ -256,11 +283,15 @@
     canvas.width = DIMS*SIZE;
     canvas.height = DIMS*SIZE;
 
-    // Init color buttons
+    // Init colors and color buttons
+    colors = getColors()
     initColorButtons();
 
-    // generate / load image
-    genEmptyPicture(DIMS);
+    // load image
+    image = getImage()
+
+    // generate / load picture
+    picture = genEmptyPicture(DIMS);
 
     // Inital render
     renderPicture();
