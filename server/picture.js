@@ -50,7 +50,11 @@ export function createNewPicture(imageId) {
     Picture.find({
       image: imageId,
       overwritten: false
+    })
+    .sort({
+      createdAt: 'asc'
     }).exec(),
+
     Image.findById(imageId).exec()
   ])
     .then(([currentPictures, image]) => {
@@ -79,23 +83,21 @@ export function createNewPicture(imageId) {
       // look for pictures that are not 'done' and were started
       // >10 mins ago
 
-      for (let y = 0; y < image.rows; y++) {
-        for (let x = 0; x < image.columns; x++) {
-          const picture = takenMap[ptStr(x, y)]
+      for (let i = 0; i < currentPictures.length; i++) {
+        const picture = currentPictures[i]
 
-          if (canOverwritePicture(picture)) {
-            return Promise.all([
-              createPicture({
-                x: picture.x,
-                y: picture.y,
-                image: image
-              }).then(replacement => {
-                return overwrite(picture, replacement)
-              }),
+        if (canOverwritePicture(picture)) {
+          return Promise.all([
+            createPicture({
+              x: picture.x,
+              y: picture.y,
+              image: image
+            }).then(replacement => {
+              return overwrite(picture, replacement)
+            }),
 
-              image
-            ])
-          }
+            image
+          ])
         }
       }
 

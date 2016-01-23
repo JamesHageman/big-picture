@@ -9,21 +9,24 @@
       <form name="newImageForm">
         <div>
           <label>
-            Columns: <input type="number" ng-model="columns" name="columns"/>
+            Columns: <input required type="number" ng-model="columns" name="columns" max="24" min="3"/>
           </label>
         </div>
         <div>
           <label>
-            Rows: {{ columns * 2 }}
+            Rows: {{ calculateRows() }}
           </label>
         </div>
         <div>
-          <button ngf-select ng-model="image" ngf-pattern="'image/*'"
+          <button required ngf-select ng-model="image" ngf-pattern="'image/*'"
             ngf-accept="'image/*'">
             Select image
           </button>
           <div ng-if="image">
             {{ image.name }}
+            <div ng-if="imageDimensions">
+              {{ imageDimensions.width }} x {{ imageDimensions.height }}
+            </div>
           </div>
         </div>
       </form>
@@ -35,12 +38,26 @@
   <script>
     var app = angular.module('app', ['ngFileUpload'])
 
-    app.controller('NewImageCtrl', function ($scope) {
-      $scope.columns = 8
+    app.controller('NewImageCtrl', function ($scope, Upload) {
+      $scope.columns = 8;
+      $scope.imageDimensions = null;
       $scope.$watch('image', function () {
-        console.log($scope.image)
-        debugger;
+        if ($scope.image) {
+          Upload.imageDimensions($scope.image)
+            .then(function (dimensions) {
+              $scope.imageDimensions = dimensions;
+            })
+        }
       })
+
+      $scope.calculateRows = function () {
+        if (!$scope.imageDimensions) {
+          return $scope.columns;
+        }
+
+        var size = Math.floor($scope.imageDimensions.width / $scope.columns);
+        return Math.floor($scope.imageDimensions.height / size);
+      }
     });
 
   </script>
