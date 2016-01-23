@@ -13,6 +13,9 @@
 		2CC083EC1C5314EB006A5831 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2CC083EB1C5314EB006A5831 /* Assets.xcassets */; };
 		2CC083EF1C5314EB006A5831 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2CC083ED1C5314EB006A5831 /* LaunchScreen.storyboard */; };
 		2CC083F71C531A21006A5831 /* PictureDrawView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC083F61C531A21006A5831 /* PictureDrawView.swift */; };
+		2CC083F91C532E07006A5831 /* ColoredPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC083F81C532E07006A5831 /* ColoredPath.swift */; };
+		2CC083FB1C533E27006A5831 /* Image.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 2CC083FA1C533E27006A5831 /* Image.jpeg */; };
+		2CC083FD1C535077006A5831 /* ColorButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC083FC1C535077006A5831 /* ColorButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +27,9 @@
 		2CC083EE1C5314EB006A5831 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2CC083F01C5314EB006A5831 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2CC083F61C531A21006A5831 /* PictureDrawView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictureDrawView.swift; sourceTree = "<group>"; };
+		2CC083F81C532E07006A5831 /* ColoredPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ColoredPath.swift; sourceTree = "<group>"; };
+		2CC083FA1C533E27006A5831 /* Image.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Image.jpeg; sourceTree = "<group>"; };
+		2CC083FC1C535077006A5831 /* ColorButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ColorButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +69,9 @@
 				2CC083ED1C5314EB006A5831 /* LaunchScreen.storyboard */,
 				2CC083F01C5314EB006A5831 /* Info.plist */,
 				2CC083F61C531A21006A5831 /* PictureDrawView.swift */,
+				2CC083F81C532E07006A5831 /* ColoredPath.swift */,
+				2CC083FA1C533E27006A5831 /* Image.jpeg */,
+				2CC083FC1C535077006A5831 /* ColorButton.swift */,
 			);
 			path = "big-picture";
 			sourceTree = "<group>";
@@ -126,6 +135,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2CC083EF1C5314EB006A5831 /* LaunchScreen.storyboard in Resources */,
+				2CC083FB1C533E27006A5831 /* Image.jpeg in Resources */,
 				2CC083EC1C5314EB006A5831 /* Assets.xcassets in Resources */,
 				2CC083EA1C5314EB006A5831 /* Main.storyboard in Resources */,
 			);
@@ -139,6 +149,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				2CC083E71C5314EB006A5831 /* ViewController.swift in Sources */,
+				2CC083F91C532E07006A5831 /* ColoredPath.swift in Sources */,
+				2CC083FD1C535077006A5831 /* ColorButton.swift in Sources */,
 				2CC083F71C531A21006A5831 /* PictureDrawView.swift in Sources */,
 				2CC083E51C5314EB006A5831 /* AppDelegate.swift in Sources */,
 			);
