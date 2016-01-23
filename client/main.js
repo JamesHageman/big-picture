@@ -19,6 +19,7 @@
 
     var isDown = false;
     var mouseLeft = false;
+    var mouseInCanvas = false;
 
     var selected_tool = "move";
 
@@ -185,7 +186,7 @@
 
     function initColorButtons() {
         for (var i = 0; i < colors.length; i++) {
-            var colorButton = $('<input type="button" value="' + colors[i] + '" id = "btn_' + i + '"/>');
+            var colorButton = $('<input type="button" class="btn btn-default" style="background-color:'+ colors[i] +' !important" value="<><>" id = "btn_' + i + '"/>');
             $("#colorContainer").append(colorButton);
             $("#btn_"+i).click(function() {
                 selectedColor = parseInt(this.id.replace( /^\D+/g, ''));
@@ -237,11 +238,13 @@
     }).mouseup(function (e) {
         isDown = false;
     }).mouseleave(function (e) {
-        
+        mouseInCanvas = false;
+
         if (isDown) mouseLeft = true;
         
         isDown = false;
     }).mouseenter(function (e) {
+        mouseInCanvas = true;
 
         if (mouseLeft) isDown = true;
 
@@ -374,6 +377,7 @@
         renderPicture();
 
         // show the board
+        $(".startContainer").css({display:"none"});
         $(".drawContainer").css({display:"block"});
     })
 
@@ -397,7 +401,7 @@
         while(currentElement = currentElement.offsetParent)
 
         canvasX = event.pageX - totalOffsetX;
-        canvasY = event.pageY - totalOffsetY;
+        canvasY = event.pageY - totalOffsetY - $(window).scrollTop();
 
         return {x:canvasX, y:canvasY}
     }
