@@ -112,8 +112,6 @@ export function createNewPicture() {
     }
 
     return Promise.all([null, image])
-  }, err => {
-    throw err
   }).then(([picture, image]) => {
     if (picture) {
       return addImageData(picture, image)
@@ -125,7 +123,7 @@ export function createNewPicture() {
   })
 }
 
-export function savePicture(_id, pixels = []) {
+export function savePicture({ _id, pixels = [], done = false }) {
   return Picture.findById(_id).exec()
     .then(picture => {
       if (pixels.length !== PICTURE_SIZE) {
@@ -144,6 +142,7 @@ export function savePicture(_id, pixels = []) {
       })
 
       picture.pixels = pixels
+      picture.done = done
 
       return picture.save()
     })

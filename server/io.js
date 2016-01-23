@@ -8,16 +8,28 @@ function sendError(socket, err) {
   socket.emit('error', err.message)
 }
 
+function errorHandler(socket) {
+  return function(err) {
+    sendError(socket, err)
+  }
+}
+
 function sendNewPicture(socket) {
   createNewPicture().then(picture => {
     socket.emit('newPicture', picture)
-  }, (err) => sendError(socket, err))
+  }, errorHandler(socket))
 }
 
 function socketSavePicture(socket, _id, pixels) {
-  savePicture(_id, pixels).then(() => {
+  savePicture({ _id, pixels, done: true }).then(() => {
     sendNewPicture(socket)
-  }, (err) => sendError(socket, err))
+  }, errorHandler(socket))
+}
+
+function socketUpdatePicture(socket, _id, pixels) {
+  savePicture({ _id, pixels, done: false }).then(picture => {
+    console.log('updated picture ', picture._id)
+  }, errorHandler(socket))
 }
 
 export default function start(server) {
@@ -28,6 +40,10 @@ export default function start(server) {
   io.on('connection', (socket) => {
     socket.on('requestPicture', () => {
       sendNewPicture(socket)
+    })
+
+    socket.on('updatePicture', ({ _id, pixels }) => {
+      socketUpdatePicture(socket, _id, pixels)
     })
 
     socket.on('savePicture', ({ _id, pixels }) => {

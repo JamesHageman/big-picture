@@ -10,4 +10,5 @@ Here are the events you can listen for / emit from the client
 
 ### Write
 - requestPicture (no args)
-- savePicture: { _id, pixels[32][32] }
+- updatePicture: { _id, pixels[size][size] }
+- savePicture: { _id, pixels[size][size] }
