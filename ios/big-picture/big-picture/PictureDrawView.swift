@@ -14,7 +14,7 @@ class PictureDrawView: UIView {
     var currentColor : UIColor!
     var pictureSideLength : Int = 64 //in "pixels"
     var pictureStateStack : [[[Int]]]! //this is a stack of 2d arrays, each filled with ints corresponding to pixel colours
-                                        //pictureStateStack[stackLevel][x][y]
+                                        //pictureStateStack[stackLevel][y][x]
     
     func pixelCoordinateFromTouchLocation(touchLocation: CGPoint) -> CGPoint{
         
