@@ -3,42 +3,49 @@ import fs from 'fs'
 import path from 'path'
 import crop from './crop'
 
+import Image from './models/Image'
+import Picture from './models/Picture'
+
 const app = express();
 
 app.use(express.static('/public'))
 
-app.get('/', (req, res) => {
-  res.send('foo')
+app.get('/images', (req, res) => {
+  Image.find()
+    .exec((err, data) => res.json(data))
 })
 
-app.get('/picture', (req, res) => {
+app.get('/image', (req, res) => {
   let {
-    file,
+    id,
     x,
-    y,
-    size
+    y
   } = req.query;
 
   x = parseInt(x, 10);
   y = parseInt(y, 10);
-  size = parseInt(size, 10);
 
-  const imageFile = path.join(__dirname, '/img/', file);
-
-  fs.readFile(imageFile, (err, buf) => {
+  Image.findById(id).exec((err, image) => {
     if (err) throw err;
 
-    crop({
-      buf,
-      x: x,
-      y: x,
-      size: size,
-      cb: (err, newBuf) => {
+    const imageFile = path.join(
+      __dirname, '/img/', image.fileName
+    );
+
+    fs.readFile(imageFile, (err, buf) => {
+      if (err) throw err;
+
+      crop({
+        buf,
+        x: x * image.width / image.columns,
+        y: y * image.height / image.rows,
+        size: image.width / image.columns
+      }, (err, newBuf) => {
         if (err) throw err;
 
         res.setHeader('Content-Type', 'image/jpg')
         res.send(newBuf)
-      }
+      })
     })
   })
 })

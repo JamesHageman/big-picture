@@ -4,9 +4,8 @@ export default function crop({
   buf,
   x,
   y,
-  size,
-  cb
-}) {
+  size
+}, cb) {
   const canvas = new Canvas(size, size);
   const ctx = canvas.getContext('2d');
   const img = new Image;
