@@ -1,8 +1,11 @@
 import { Server } from 'http'
 import express from 'express'
+import cookieParser from 'cookie-parser'
+import session from 'express-session'
 import fs from 'fs'
 import path from 'path'
 import crop from './crop'
+import { url as dbUrl } from './db'
 
 import Image from './models/Image'
 import Picture from './models/Picture'
@@ -10,7 +13,32 @@ import { createNewPicture, savePicture } from './picture'
 
 import start from './io'
 
+const MongoDBStore = require('connect-mongodb-session')(session)
+
 const app = express()
+
+const secret = 'lol secuity'
+const maxAge = 1000 * 60 * 60 * 24 * 7 // 1 week
+
+const cookieMiddleware = cookieParser(secret, {
+  maxAge: maxAge
+})
+
+const sessionMiddleware = session({
+  secret: secret,
+  cookie: {
+    maxAge: maxAge
+  },
+  resave: true,
+  saveUninitialized: true,
+  store: new MongoDBStore({
+    uri: dbUrl,
+    collection: 'sessions'
+  })
+})
+
+app.use(cookieMiddleware)
+app.use(sessionMiddleware)
 
 app.use(express.static(path.join(__dirname, '../client')))
 app.use(express.static(path.join(__dirname, '/public')))
@@ -93,6 +121,6 @@ app.get('/image/:id/pictures', (req, res) => {
 
 const server = Server(app)
 
-start(server)
+start(server, sessionMiddleware, cookieMiddleware)
 
 export default server

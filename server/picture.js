@@ -15,7 +15,7 @@ const createPicture = ({
     y: y,
     image: image._id,
     done: false,
-    pixels: []
+    pixels: null
   })
 
   return p.save()
@@ -25,15 +25,16 @@ const addImageData = (picture, imageObj) => {
   const {
     x,
     y,
-    image,
-    _id
+    _id,
+    pixels
   } = picture
 
   let p = {}
-  p.imageURL = `/image/${image}/${x}/${y}`
+  p.imageURL = `/image/${imageObj._id}/${x}/${y}`
   p.colors = imageObj.colors
   p.size = PICTURE_SIZE
   p._id = _id
+  p.pixels = pixels
   return p
 }
 
@@ -121,6 +122,15 @@ export function createNewPicture() {
   }, err => {
     throw err
   })
+}
+
+export function getPicture(id) {
+  return Picture.findById(id)
+    .populate('image')
+    .exec()
+    .then(picture => {
+      return addImageData(picture, picture.image)
+    })
 }
 
 export function savePicture({ _id, pixels = [], done = false }) {
