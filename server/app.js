@@ -1,3 +1,4 @@
+import { Server } from 'http'
 import express from 'express'
 import fs from 'fs'
 import path from 'path'
@@ -5,6 +6,8 @@ import crop from './crop'
 
 import Image from './models/Image'
 import { createNewPicture } from './picture'
+
+import start from './io'
 
 const app = express()
 
@@ -59,4 +62,8 @@ app.get('/image/:id/newPicture', (req, res) => {
     .then(picture => res.json(picture))
 })
 
-export default app
+const server = Server(app)
+
+start(server)
+
+export default server
