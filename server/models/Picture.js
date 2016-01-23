@@ -3,13 +3,14 @@ import db from '../db'
 
 const pictureSchema = new Schema({
   pixels: [
-    [ Number ]
+    [Number]
   ],
   x: Number,
   y: Number,
-  imageId: Schema.Types.ObjectId
+  done: Boolean,
+  image: { type: Schema.Types.ObjectId, ref: 'Image' }
 })
 
-const Picture = db.model('Picture', pictureSchema, 'Picture');
+const Picture = db.model('Picture', pictureSchema, 'Picture')
 
 export default Picture
