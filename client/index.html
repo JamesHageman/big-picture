@@ -20,6 +20,7 @@
                     Sorry, looks like your browser doesn't support HTML5 Canvas!
                 </canvas>
             </div>
+
             <div class="controls">
                 <div class = "modeContainer">
                     <label for="mode" class="control-label input-group"></label>
@@ -30,8 +31,22 @@
                         <label class="btn btn-default" id="btn_fill">
                             <input type="radio" name="mode">Bucket
                         </label>
-                        <label class="btn btn-default" id="btn_move">
-                            <input type="radio" name="mode" class="active">Move
+                        <label class="btn btn-primary active" id="btn_move">
+                            <input type="radio" name="mode" checked="on">Move
+                        </label>
+                    </div>
+                </div>
+                <div class="strokeContainer">
+                    <label for="stroke_size" class="control-label input-group"></label>
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-default active" id="btn_stroke_sm">
+                            <input type="radio" name="stroke_size" checked="on">Small
+                        </label>
+                        <label class="btn btn-default" id="btn_stroke_md">
+                            <input type="radio" name="stroke_size">Medium
+                        </label>
+                        <label class="btn btn-default" id="btn_stroke_lg">
+                            <input type="radio" name="stroke_size">Large
                         </label>
                     </div>
                 </div>
@@ -48,7 +63,6 @@
                     <h1>Colors:</h1>
                 </div>
                 <div class = "comContainer">
-                    <button class="btn btn-default" id="btn_update">update</button>
                     <button class="btn btn-default" id="btn_save">save</button>
                 </div>
             </div>

@@ -21,6 +21,7 @@
     var mouseLeft = false;
 
     var selected_tool = "move";
+    var stroke_size = 1;
 
     var canvas;
     var ctx;
@@ -35,6 +36,8 @@
 
     var colors = [];
     var selectedColor = 1;
+
+    var updateTimeoutHandle;
 
     //------------------------- LOGICZ ------------------------//
     
@@ -194,13 +197,34 @@
             $("#colorContainer").append(colorButton);
             $("#btn_"+i).click(function() {
                 selectedColor = parseInt(this.id.replace( /^\D+/g, ''));
-                if (selected_tool == "move") selected_tool = "freehand";
+                if (selected_tool == "move") {
+                    selected_tool = "freehand";
+
+                    $('.strokeContainer').css({display:"block"});
+                }
                 console.log("using color " + colors[selectedColor])
             })
         }
     }
 
     //--------------------- EVENT HANDLERS --------------------//
+    function splotchCircle(tile, r) {
+        for (var i = -(r-1); i <= (r-1); i++) {
+            for (var j = -(r-1); j <= (r-1); j++) {
+                a = tile.r + i;
+                b = tile.c + j;
+
+                if (Math.sqrt(i*i + j*j) <= (r-1)) {
+                    
+                    try {
+                        picture[a][b] = selectedColor;
+                    } catch (e) {}
+                }
+            }
+        }
+        renderPicture();
+    }
+
     function addDrawEventHandlers () {
         $('#drawingboard').mousedown(function (e) {
             isDown = true;
@@ -218,10 +242,12 @@
 
                 var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
 
-                if (picture[tile.r][tile.c] != selectedColor) {
-                    picture[tile.r][tile.c] = selectedColor;
-                    renderPicture();
-                }
+                if (stroke_size == 1) {
+                    if (picture[tile.r][tile.c] != selectedColor) {
+                        picture[tile.r][tile.c] = selectedColor;
+                        renderPicture();
+                    }
+                } else splotchCircle(tile, stroke_size)
             }
 
             // Fill Mode
@@ -238,6 +264,7 @@
             }
         }).mouseup(function (e) {
             isDown = false;
+            updatePicture();
         }).mouseleave(function (e) {
             if (isDown) mouseLeft = true;
             
@@ -257,14 +284,17 @@
             if (selected_tool == "freehand" && isDown) {
                 var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
 
-                if (picture[tile.r][tile.c] != selectedColor) {
-                    picture[tile.r][tile.c] = selectedColor;
-                    renderPicture();
-                }
+                if (stroke_size == 1) {
+                    if (picture[tile.r][tile.c] != selectedColor) {
+                        picture[tile.r][tile.c] = selectedColor;
+                        renderPicture();
+                    }
+                } else splotchCircle(tile, stroke_size)
             }
         });
 
         $(document).mouseup(function (e) {
+            updatePicture();
             mouseLeft = false;
         });
 
@@ -304,17 +334,33 @@
         $("#btn_draw").click(function(){
             selected_tool = "freehand";
 
+            $('.strokeContainer').css({display:"block"});
+
             console.log("freehand");
         });
         $("#btn_fill").click(function(){
             selected_tool = "fill";
+
+            $('.strokeContainer').css({display:"none"});
 
             console.log("fill");
         });
         $("#btn_move").click(function(){
             selected_tool = "move";
 
+            $('.strokeContainer').css({display:"none"});
+
             console.log("move");
+        });
+
+        $("#btn_stroke_sm").click(function(){
+            stroke_size = 1;
+        });
+        $("#btn_stroke_md").click(function(){
+            stroke_size = 2;
+        });
+        $("#btn_stroke_lg").click(function(){
+            stroke_size = 3;
         });
 
         $("#btn_toggle_grid").click(function(){
@@ -335,7 +381,6 @@
             console.log("cleared");
         });
 
-        $("#btn_update").click(updatePicture);
         $("#btn_save").click(function(){
             
         });
@@ -359,14 +404,22 @@
     var socket = io.connect('http://192.168.43.150:8080/');
 
     function updatePicture() {
-        socket.emit("updatePicture", {
-            _id:picture_id,
-            pixels:picture
-        });
-        console.log({
-            _id:picture_id,
-            pixels:picture
-        })
+        // 10/10 error handling, would be trash programmer again
+        for (var i = 0; i < picture.length; i++) {
+            picture[i] = picture[i].slice(0, DIMS);
+        }
+        picture = picture.slice(0,DIMS);
+
+        // in your click function, call clearTimeout
+        window.clearTimeout(updateTimeoutHandle);
+        updateTimeoutHandle = window.setTimeout(function(){
+            // send this bed boi
+            socket.emit("updatePicture", {
+                _id:picture_id,
+                pixels:picture
+            });
+            console.log("updated")
+        }, 2000);
     }
 
     function getImage (url) {
@@ -378,7 +431,7 @@
         return image;
     }
 
-    socket.on('error', function (picture_obj) {
+    socket.on('serverError', function (picture_obj) {
         alert("THERE WAS A BACKEND SERVER ERROR BRUH");
     });
 

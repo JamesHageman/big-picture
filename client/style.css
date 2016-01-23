@@ -1,6 +1,16 @@
+body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    outline: none;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
+}
+
 .drawContainer {
     position: relative;
-
     display: none;
 }
 .startContainer {
@@ -15,25 +25,17 @@
 canvas {
     border: 1px solid black;
 
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    outline: none;
-    -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
-
     cursor: default;
 }
 
-.canvasContainer {
-    margin: auto;
-}
 .controls {
-    position: static;
+    
 }
 
 .colorbtn {
     width: 50px;
+}
+
+.strokeContainer {
+    display: none;
 }
