@@ -4,7 +4,7 @@
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="drawContainer">
         <div class="canvasContainer">
             <canvas id="drawingboard">
                 Sorry, looks like your browser doesn't support HTML5 Canvas!
@@ -23,11 +23,17 @@
             <div id="colorContainer">
                 <!-- Fill me -->
             </div>
+            <div class = "comContainer">
+                
+            </div>
         </div>
+    </div>
+    <div class="startContainer">
+        <button id="btn_start">Start!</button>
     </div>
     
     <script src="js/jquery-2.2.0.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="socket.io.js"></script>
     <script src="main.js"></script>
 </body>
 </html>

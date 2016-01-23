@@ -22,6 +22,11 @@
 
     var selected_tool = "move";
 
+    var canvas;
+    var ctx;
+
+    var picture_id;
+
     var image;
 
     var picture = [];
@@ -41,7 +46,7 @@
                 random = false;
 
                 if (random) picture[r].push( ((Math.random()<0.5)?0:((Math.random()<0.5)?1:((Math.random()<0.5)?2:((Math.random()<0.5)?3:4)))) );
-                else picture[r].push(0);
+                else picture[r].push(-1);
             }
         }
         return picture;
@@ -105,12 +110,10 @@
         }
 
         undo_states.push(currentState);
-        console.log(undo_states);
     }
 
     function undo() {
         var oldstate = undo_states.pop();
-        console.log(oldstate);
 
         for (var r = 0; r < DIMS; ++r) {
             for (var c = 0; c < DIMS; ++c) {
@@ -156,8 +159,11 @@
                 var lOffset = c * SIZE;
                 var tOffset = r * SIZE;
 
-                ctx.fillStyle = colors[picture[r][c]];
-                ctx.fillRect(lOffset, tOffset, SIZE+1, SIZE+1); // +1 cuz zoom
+                if (picture[r][c] !== -1) {
+                    ctx.fillStyle = colors[picture[r][c]];
+                    ctx.fillRect(lOffset, tOffset, SIZE+1, SIZE+1); // +1 cuz zoom
+                }
+                
 
                 if (grid_on) {
                     ctx.strokeStyle = "rgba(100,100,100,0.5)";
@@ -170,7 +176,7 @@
 
         ctx.save();
             ctx.imageSmoothingEnabled = false;
-            ctx.globalAlpha = 0.4;
+            ctx.globalAlpha = 0.5;
             ctx.drawImage(image, 0, 0, GW, GH);
         ctx.restore()
 
@@ -191,18 +197,6 @@
 
     // -------------------- MUH WEBSOCKETS --------------------//
 
-    function getColors () {
-        return ["white","lightblue","pink","lightgreen","black"];
-    }
-
-    function getImage () {
-        var image = new Image();
-        image.src = 'tst.png';
-        image.onload = function () {
-            renderPicture();
-        }
-        return image;
-    }
 
     //--------------------- EVENT HANDLERS --------------------//
 
@@ -334,6 +328,59 @@
         console.log("undone");
     });
 
+
+    //--------------- MUH WEBSAHKETS -------------------//
+
+    var socket = io.connect('http://192.168.43.150:8080/');
+
+    function getImage (url) {
+        var image = new Image();
+        image.src = url;
+        image.onload = function () {
+            renderPicture();
+        }
+        return image;
+    }
+
+    socket.on('error', function (picture_obj) {
+        alert("THERE WAS A BACKEND SERVER ERROR BRUH");
+    });
+
+    socket.on('newPicture', function (picture_obj) {
+        console.log('Picture: ', picture_obj);
+
+        // Init canvas context
+        canvas = document.getElementById('drawingboard');
+        ctx = canvas.getContext("2d");
+
+        // set correct dimensions
+        canvas.width = DIMS*SIZE;
+        canvas.height = DIMS*SIZE;
+
+        // Init colors and color buttons
+        colors = picture_obj.colors;
+        initColorButtons();
+
+        // load image
+        image = getImage('http://192.168.43.150:8080' + picture_obj.imageURL);
+
+        picture_id = picture_obj._id;
+
+        // generate / load picture
+        DIMS = picture_obj.size;
+        picture = genEmptyPicture(DIMS);
+
+        // Inital render
+        renderPicture();
+
+        // show the board
+        $(".drawContainer").css({display:"block"});
+    })
+
+    $("#btn_start").click(function(){
+        socket.emit('requestPicture');
+    });
+
     //------------------------- MAGIC -------------------------//
 
     function relMouseCoords(event){
@@ -357,26 +404,6 @@
     HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
 
     //-------------------------- MAIN -------------------------//
-
-    // Init canvas context
-    var canvas = document.getElementById('drawingboard');
-    var ctx = canvas.getContext("2d");
-
-    canvas.width = DIMS*SIZE;
-    canvas.height = DIMS*SIZE;
-
-    // Init colors and color buttons
-    colors = getColors()
-    initColorButtons();
-
-    // load image
-    image = getImage()
-
-    // generate / load picture
-    picture = genEmptyPicture(DIMS);
-
-    // Inital render
-    renderPicture();
 
     console.log("gethype");
 // })();
