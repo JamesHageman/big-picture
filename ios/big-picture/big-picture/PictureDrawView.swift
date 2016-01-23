@@ -13,18 +13,13 @@ class PictureDrawView: UIView {
 
     let clearColorIntValue : Int = -1
     var colorList : [UIColor]!
-    var currentColorInt : Int! {
-        didSet {
-            if let path = pathStack.last {
-                path.currentColorIndex = currentColorInt
-            }
-        }
-    }
+    var currentColorInt : Int!
     var pictureSideLength : Int = 32 //in "pixels"
     var divisionSideLength : CGFloat! // in actual pixels
     var pictureStateStack : [[[Int]]]! =  [[[Int]]]()//this is a stack of 2d arrays, each filled with ints corresponding to pixel colours
                                         //pictureStateStack[stackLevel][y][x]
-    var pathStack : [ColoredPath]! = [ColoredPath]()
+    var shouldDrawGrid : Bool = false
+    var strokeWidth = 0
     
     func initializeValues(colors: [UIColor]) {
         colorList = colors
@@ -44,29 +39,45 @@ class PictureDrawView: UIView {
                 [[Int]](count: pictureSideLength, repeatedValue:
                     [Int](count: pictureSideLength, repeatedValue: clearColorIntValue)
                 ))
-            pathStack.append(ColoredPath(colors: colorList))
         }
         else {
             pictureStateStack.append(pictureStateStack.last!)
-            pathStack.append(pathStack.last!.pathCopy())
+        }
+        if (pictureStateStack.count > 20) {
+            pictureStateStack.removeFirst()
         }
     }
     
     func popStack() {
         pictureStateStack.popLast()
-        pathStack.popLast()
+        self.setNeedsDisplay()
+    }
+    
+    func toggleGrid() {
+        shouldDrawGrid = !shouldDrawGrid
+        self.setNeedsDisplay()
     }
     
     func addTouchLocationToStacks(touchLocation : CGPoint) { //should never be called on empty stacks
         let pixelCoord : (x : Int, y : Int)! = pixelCoordinateFromTouchLocation(touchLocation)
-        let xScreenVal = CGFloat(pixelCoord.x) * divisionSideLength, yScreenVal = CGFloat(pixelCoord.y) * divisionSideLength
-        if (pictureStateStack[pictureStateStack.count-1][pixelCoord.y][pixelCoord.x] != currentColorInt) {
-            pictureStateStack[pictureStateStack.count-1][pixelCoord.y][pixelCoord.x] = currentColorInt
-            CGPathMoveToPoint(pathStack.last!.getCurrentPath(), nil, xScreenVal, yScreenVal)
-            CGPathAddRect(pathStack.last!.getCurrentPath(), nil, CGRectMake(xScreenVal, yScreenVal, divisionSideLength, divisionSideLength))
-            CGPathCloseSubpath(pathStack.last!.getCurrentPath())
-            self.setNeedsDisplay()
+        if (pixelCoord.x >= pictureSideLength || pixelCoord.y >= pictureSideLength) {
+            return;
         }
+        
+    //    let xScreenVal = CGFloat(pixelCoord.x) * divisionSideLength, yScreenVal = CGFloat(pixelCoord.y) * divisionSideLength
+       // if (pictureStateStack[pictureStateStack.count-1][pixelCoord.y][pixelCoord.x] != currentColorInt) {
+        
+        for var i = pixelCoord.x - strokeWidth; i <= pixelCoord.x + strokeWidth; i++ {
+            for var j = pixelCoord.y - strokeWidth; j <= pixelCoord.y + strokeWidth; j++ {
+                if (i >= 0 && i < pictureSideLength && j >= 0 && j < pictureSideLength) {
+                    if ((i - pixelCoord.x) * (i - pixelCoord.x) + (j - pixelCoord.y) * (j - pixelCoord.y)
+                        <= strokeWidth * strokeWidth) {
+                        pictureStateStack[pictureStateStack.count-1][j][i] = currentColorInt
+                    }
+                }
+            }
+        }
+            self.setNeedsDisplay()
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
@@ -75,12 +86,35 @@ class PictureDrawView: UIView {
     }
     
     override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+       // print(touches.first!.locationInView(self))
         addTouchLocationToStacks(touches.first!.locationInView(self))
     }
 
     override func drawRect(rect: CGRect) {
-        if let context = UIGraphicsGetCurrentContext(), currentPath = pathStack.last {
-            currentPath.drawPathsWithContext(context)
+        if let cont = UIGraphicsGetCurrentContext(), currentPicture = pictureStateStack.last {
+     //       let rectSideLength = (rect.width > divisionSideLength * 2) ? divisionSideLength : rect.width
+            let xSpan = (min: (Int)(rect.origin.x / divisionSideLength),
+                         max: (Int)(rect.origin.x / divisionSideLength + rect.width / divisionSideLength))
+            let ySpan = (min: (Int)(rect.origin.y / divisionSideLength),
+                max: (Int)(rect.origin.y / divisionSideLength + rect.height / divisionSideLength))
+            for var i = xSpan.min; i < xSpan.max; i++ {
+                if (shouldDrawGrid) {
+                    CGContextSetRGBStrokeColor(cont, 100.0/255.0, 100.0/255.0, 100.0/255.0, 0.5)
+                    CGContextMoveToPoint(cont, 0, CGFloat(i) * divisionSideLength)
+                    CGContextAddLineToPoint(cont, self.frame.width, CGFloat(i) * divisionSideLength)
+                    CGContextMoveToPoint(cont, CGFloat(i) * divisionSideLength, 0)
+                    CGContextAddLineToPoint(cont, CGFloat(i) * divisionSideLength, self.frame.height)
+                    CGContextStrokePath(cont)
+                }
+                for var j = ySpan.min; j < ySpan.max; j++ {
+                    let colorIndex = currentPicture[j][i]
+                    if (colorIndex != clearColorIntValue) {
+                        CGContextSetFillColorWithColor(cont, colorList[colorIndex].CGColor)
+                        CGContextAddRect(cont, CGRectMake(CGFloat(i) * divisionSideLength, CGFloat(j) * divisionSideLength, divisionSideLength+1, divisionSideLength+1))
+                        CGContextFillPath(cont)
+                    }
+                }
+            }
         }
     }
 
