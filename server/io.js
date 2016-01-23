@@ -37,7 +37,7 @@ function socketUpdatePicture(socket, _id, pixels) {
 }
 
 function sendCurrentPicture(socket) {
-  const pictureId = socket.handshake.session.currentPicture;
+  const pictureId = socket.handshake.session.currentPicture
   getPicture(pictureId).then(picture => {
     socket.emit('newPicture', picture)
   }, errorHandler(socket))
@@ -64,6 +64,7 @@ export default function start(server, sessionMiddleware, cookieMiddleware) {
     })
 
     socket.on('updatePicture', ({ _id, pixels }) => {
+      console.log('update', _id, pixels.length)
       socketUpdatePicture(socket, _id, pixels)
     })
 

@@ -34,7 +34,7 @@ const addImageData = (picture, imageObj) => {
   p.colors = imageObj.colors
   p.size = PICTURE_SIZE
   p._id = _id
-  p.pixels = pixels
+  p.pixels = JSON.parse(pixels)
   return p
 }
 
@@ -133,7 +133,7 @@ export function getPicture(id) {
     })
 }
 
-export function savePicture({ _id, pixels = [], done = false }) {
+export function savePicture({ _id, pixels, done = false }) {
   return Picture.findById(_id).exec()
     .then(picture => {
       if (pixels.length !== PICTURE_SIZE) {
@@ -151,9 +151,11 @@ export function savePicture({ _id, pixels = [], done = false }) {
         }
       })
 
-      picture.pixels = pixels
+      picture.pixels = JSON.stringify(pixels)
       picture.done = done
+      // picture.markModified('pixels')
 
+      console.log('saving picutre', _id, pixels.length)
       return picture.save()
     })
 }
