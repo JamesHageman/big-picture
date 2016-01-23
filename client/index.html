@@ -25,13 +25,13 @@
                     <label for="mode" class="control-label input-group"></label>
                     <div class="btn-group" data-toggle="buttons">
                         <label class="btn btn-default" id="btn_draw">
-                            <input type="radio" name="mode" value="freehand">Free Draw
+                            <input type="radio" name="mode">Free Draw
                         </label>
                         <label class="btn btn-default" id="btn_fill">
-                            <input type="radio" name="mode" value="fill">Bucket
+                            <input type="radio" name="mode">Bucket
                         </label>
                         <label class="btn btn-default" id="btn_move">
-                            <input type="radio" name="mode" value="move" class="active">Move
+                            <input type="radio" name="mode" class="active">Move
                         </label>
                     </div>
                 </div>
@@ -42,12 +42,14 @@
                         </label>
                     </div>
                     <button class="btn btn-default" id="btn_undo">Undo</button>
+                    <button class="btn btn-danger" id="btn_clear">Clear</button>
                 </div>
                 <div id="colorContainer">
                     <h1>Colors:</h1>
                 </div>
                 <div class = "comContainer">
-                    
+                    <button class="btn btn-default" id="btn_update">update</button>
+                    <button class="btn btn-default" id="btn_save">save</button>
                 </div>
             </div>
         </div>

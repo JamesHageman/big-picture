@@ -3,8 +3,8 @@
     var DIMS = 32;
     var SIZE = 24;
 
-    var GW = DIMS*SIZE;
-    var GH = DIMS*SIZE;
+    var GW;
+    var GH;
 
     //-------------------------- VARS -------------------------//
 
@@ -186,7 +186,11 @@
 
     function initColorButtons() {
         for (var i = 0; i < colors.length; i++) {
-            var colorButton = $('<input type="button" class="btn btn-default" style="background-color:'+ colors[i] +' !important" value="<><>" id = "btn_' + i + '"/>');
+            var colorButton = $('<input type="button" \
+                                        class="btn btn-default colorbtn" \
+                                        style="background-color:'+ colors[i] +' !important" \
+                                        id = "btn_' + i + '"/>'
+                                );
             $("#colorContainer").append(colorButton);
             $("#btn_"+i).click(function() {
                 selectedColor = parseInt(this.id.replace( /^\D+/g, ''));
@@ -323,12 +327,47 @@
 
             console.log("undone");
         });
+        $("#btn_clear").click(function(){
+            savePicture();
+            picture = genEmptyPicture();
+            renderPicture();
+
+            console.log("cleared");
+        });
+
+        $("#btn_update").click(updatePicture);
+        $("#btn_save").click(function(){
+            
+        });
     }
 
+    $( window ).resize(function() {
+        SIZE = $(".container").width() / DIMS;
+
+        GW = DIMS*SIZE;
+        GH = DIMS*SIZE;
+
+        // set correct dimensions
+        canvas.width = DIMS*SIZE;
+        canvas.height = DIMS*SIZE;
+
+        renderPicture();
+    });
 
     //--------------- MUH WEBSAHKETS -------------------//
 
     var socket = io.connect('http://192.168.43.150:8080/');
+
+    function updatePicture() {
+        socket.emit("updatePicture", {
+            _id:picture_id,
+            pixels:picture
+        });
+        console.log({
+            _id:picture_id,
+            pixels:picture
+        })
+    }
 
     function getImage (url) {
         var image = new Image();
@@ -350,6 +389,12 @@
         canvas = document.getElementById('drawingboard');
         ctx = canvas.getContext("2d");
 
+        // Find a nice size for the boxes
+        SIZE = $(".container").width() / DIMS;
+
+        GW = DIMS*SIZE;
+        GH = DIMS*SIZE;
+
         // set correct dimensions
         canvas.width = DIMS*SIZE;
         canvas.height = DIMS*SIZE;
@@ -367,7 +412,6 @@
         DIMS = picture_obj.size;
         if (picture_obj.pixels == null) picture = genEmptyPicture(DIMS);
         else picture = picture_obj.pixels;
-        
 
         // Inital render
         renderPicture();

@@ -9,7 +9,7 @@
 
 .container {
     margin: auto;
-    width: 768px;
+    width: 60%;
 }
 
 canvas {
@@ -32,4 +32,8 @@ canvas {
 }
 .controls {
     position: static;
+}
+
+.colorbtn {
+    width: 50px;
 }
