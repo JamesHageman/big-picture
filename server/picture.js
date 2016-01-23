@@ -50,74 +50,79 @@ const overwrite = (picture, replacement) => {
     .then(() => replacement)
 }
 
-export function createNewPicture(imageId) {
-  return Promise.all([
-    Picture.find({
-      image: imageId,
-      overwritten: false
-    })
-    .sort({
-      createdAt: 'asc'
-    }).exec(),
+function getRandomImage() {
+  return Image.findOne()
+    .exec()
+}
 
-    Image.findById(imageId).exec()
-  ])
-    .then(([currentPictures, image]) => {
-      const takenMap = {}
-
-      currentPictures.forEach(picture => {
-        takenMap[ptStr(picture.x, picture.y)] = picture
+export function createNewPicture() {
+  return getRandomImage().then(image => {
+    return Promise.all([
+      Picture.find({
+        image: image._id,
+        overwritten: false
       })
+      .sort({
+        createdAt: 'asc'
+      }).exec(),
+      image
+    ])
+  }).then(([currentPictures, image]) => {
+    const takenMap = {}
 
-      // look for untaken pictures
-      for (let y = 0; y < image.rows; y++) {
-        for (let x = 0; x < image.columns; x++) {
-          if (!takenMap[ptStr(x, y)]) {
-            return Promise.all([
-              createPicture({
-                x,
-                y,
-                image
-              }),
-              image
-            ])
-          }
-        }
-      }
+    currentPictures.forEach(picture => {
+      takenMap[ptStr(picture.x, picture.y)] = picture
+    })
 
-      // look for pictures that are not 'done' and were started
-      // >10 mins ago
-
-      for (let i = 0; i < currentPictures.length; i++) {
-        const picture = currentPictures[i]
-
-        if (canOverwritePicture(picture)) {
+    // look for untaken pictures
+    for (let y = 0; y < image.rows; y++) {
+      for (let x = 0; x < image.columns; x++) {
+        if (!takenMap[ptStr(x, y)]) {
           return Promise.all([
             createPicture({
-              x: picture.x,
-              y: picture.y,
-              image: image
-            }).then(replacement => {
-              return overwrite(picture, replacement)
+              x,
+              y,
+              image
             }),
-
             image
           ])
         }
       }
+    }
 
-      return Promise.all([null, image])
-    }, err => {
-      throw err
-    }).then(([picture, image]) => {
-      if (picture) {
-        return addImageData(picture, image)
+    // look for pictures that are not 'done' and were started
+    // >10 mins ago
+
+    for (let i = 0; i < currentPictures.length; i++) {
+      const picture = currentPictures[i]
+
+      if (canOverwritePicture(picture)) {
+        return Promise.all([
+          createPicture({
+            x: picture.x,
+            y: picture.y,
+            image: image
+          }).then(replacement => {
+            return overwrite(picture, replacement)
+          }),
+
+          image
+        ])
       }
+    }
 
-      return picture
-    }, err => {
-      throw err
-    })
+    return Promise.all([null, image])
+  }, err => {
+    throw err
+  }).then(([picture, image]) => {
+    if (picture) {
+      return addImageData(picture, image)
+    }
+
+    return picture
+  }, err => {
+    throw err
+  })
 }
 
 export function savePicture(_id, pixels = []) {

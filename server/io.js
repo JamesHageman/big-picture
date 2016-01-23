@@ -9,8 +9,7 @@ function sendError(socket, err) {
 }
 
 function sendNewPicture(socket) {
-  const imageId = '56a2f296b2a42be6ec6d9296'
-  createNewPicture(imageId).then(picture => {
+  createNewPicture().then(picture => {
     socket.emit('newPicture', picture)
   }, (err) => sendError(socket, err))
 }

@@ -5,6 +5,7 @@ import path from 'path'
 import crop from './crop'
 
 import Image from './models/Image'
+import Picture from './models/Picture'
 import { createNewPicture, savePicture } from './picture'
 
 import start from './io'
@@ -67,6 +68,27 @@ app.get('/savePicture/:id', (req, res) => {
   savePicture(req.params.id, [])
     .then(x => res.json(x),
       err => res.json(err.message))
+})
+
+app.get('/image/:id/pictures', (req, res) => {
+  const { id } = req.params
+
+  Promise.all([
+    Image.findById(id).exec(),
+    Picture.find({
+      image: id,
+      overwritten: false
+    })
+      .sort('x y')
+      .select('pixels x y _id done')
+      .exec()
+  ])
+    .then(([image, pictures]) => {
+      res.json({
+        image,
+        pictures
+      })
+    })
 })
 
 const server = Server(app)
