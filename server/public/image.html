@@ -19,7 +19,7 @@
     var ctx = canvas.getContext('2d')
 
 
-    var socket = io.connect('/image');
+    var socket = io.connect('/');
     socket.emit('setImage', '56a2f296b2a42be6ec6d9296')
 
     socket.on('getImage', function (data) {
@@ -32,7 +32,14 @@
     });
 
     socket.on('updatePicture', function (picture) {
-      console.log('update', picture)
+      console.log('updatePicture', picture);
+      for (var i = 0; i < pictures.length; i++) {
+        if (pictures[i]._id === picture._id) {
+          pictures[i] = picture;
+          drawPictureCanvas(picture)
+          renderPicture(picture)
+        }
+      }
     })
 
     function drawPictureCanvas(picture) {
@@ -61,6 +68,18 @@
       picture.canvas = canvas;
     }
 
+    function renderPicture(picture) {
+      var scale = image.width / image.columns;
+      ctx.imageSmoothingEnabled = false
+      ctx.drawImage(
+        picture.canvas,
+        picture.x * scale,
+        picture.y * scale,
+        scale,
+        scale
+      )
+    }
+
     function render() {
       if (!image) return;
       canvas.width = image.width;
@@ -72,17 +91,7 @@
 
       drawnPictures.forEach(drawPictureCanvas);
 
-      drawnPictures.forEach(function (picture) {
-        var scale = image.width / image.columns;
-        ctx.imageSmoothingEnabled = false
-        ctx.drawImage(
-          picture.canvas,
-          picture.x * scale,
-          picture.y * scale,
-          scale,
-          scale
-        )
-      })
+      drawnPictures.forEach(renderPicture)
     }
 
   })();
