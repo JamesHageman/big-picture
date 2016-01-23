@@ -1,0 +1,27 @@
+{
+  "name": "big-picture",
+  "version": "0.0.1",
+  "description": "Art thing for waterloohacks 2016",
+  "main": "server/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JamesHageman/big-picture.git"
+  },
+  "author": "James Hageman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JamesHageman/big-picture/issues"
+  },
+  "homepage": "https://github.com/JamesHageman/big-picture#readme",
+  "devDependencies": {
+    "babel-preset-es2015": "^6.3.13",
+    "babel-register": "^6.4.3"
+  },
+  "dependencies": {
+    "canvas": "^1.3.8",
+    "express": "^4.13.4"
+  }
+}
