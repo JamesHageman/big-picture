@@ -5,7 +5,7 @@ import path from 'path'
 import crop from './crop'
 
 import Image from './models/Image'
-import { createNewPicture } from './picture'
+import { createNewPicture, savePicture } from './picture'
 
 import start from './io'
 
@@ -61,6 +61,12 @@ app.get('/image/:id/newPicture', (req, res) => {
 
   createNewPicture(id)
     .then(picture => res.json(picture))
+})
+
+app.get('/savePicture/:id', (req, res) => {
+  savePicture(req.params.id, [])
+    .then(x => res.json(x),
+      err => res.json(err.message))
 })
 
 const server = Server(app)

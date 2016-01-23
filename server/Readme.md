@@ -5,7 +5,9 @@
 Here are the events you can listen for / emit from the client
 
 ### Read
-- newPicture: ({ imageURL, colors[], _id })
+- newPicture: { imageURL, colors[], size, _id }
+- error: message
 
 ### Write
-- requestPicture: imageId (try '56a2f296b2a42be6ec6d9296')
+- requestPicture (no args)
+- savePicture: { _id, pixels[32][32] }

@@ -2,7 +2,24 @@ import createIO from 'socket.io'
 // import Image from './models/Image'
 // import Picture from './models/Picture'
 
-import { createNewPicture } from './picture'
+import { createNewPicture, savePicture } from './picture'
+
+function sendError(socket, err) {
+  socket.emit('error', err.message)
+}
+
+function sendNewPicture(socket) {
+  const imageId = '56a2f296b2a42be6ec6d9296'
+  createNewPicture(imageId).then(picture => {
+    socket.emit('newPicture', picture)
+  }, (err) => sendError(socket, err))
+}
+
+function socketSavePicture(socket, _id, pixels) {
+  savePicture(_id, pixels).then(() => {
+    sendNewPicture(socket)
+  }, (err) => sendError(socket, err))
+}
 
 export default function start(server) {
   const io = createIO(server)
@@ -11,10 +28,11 @@ export default function start(server) {
 
   io.on('connection', (socket) => {
     socket.on('requestPicture', () => {
-      const imageId = '56a2f296b2a42be6ec6d9296'
-      createNewPicture(imageId).then(picture => {
-        socket.emit('newPicture', picture)
-      })
+      sendNewPicture(socket)
+    })
+
+    socket.on('savePicture', ({ _id, pixels }) => {
+      socketSavePicture(socket, _id, pixels)
     })
   })
 }

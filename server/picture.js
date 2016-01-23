@@ -3,6 +3,8 @@ import Image from './models/Image'
 
 const ptStr = (x, y) => x + ',' + y
 
+const PICTURE_SIZE = 32
+
 const createPicture = ({
   image,
   x,
@@ -23,12 +25,15 @@ const addImageData = (picture, imageObj) => {
   const {
     x,
     y,
-    image
+    image,
+    _id
   } = picture
 
-  let p = picture.toJSON()
+  let p = {}
   p.imageURL = `/image/${image}/${x}/${y}`
   p.colors = imageObj.colors
+  p.size = PICTURE_SIZE
+  p._id = _id
   return p
 }
 
@@ -112,5 +117,29 @@ export function createNewPicture(imageId) {
       return picture
     }, err => {
       throw err
+    })
+}
+
+export function savePicture(_id, pixels = []) {
+  return Picture.findById(_id).exec()
+    .then(picture => {
+      if (pixels.length !== PICTURE_SIZE) {
+        throw new Error(
+          `expected ${PICTURE_SIZE} rows, got ${pixels.length}`
+        )
+      }
+
+      pixels.forEach((row, i) => {
+        if (row.length !== PICTURE_SIZE) {
+          throw new Error(
+            `expected row ${i} to have ${PICTURE_SIZE} elements,
+            got ${row.length}`
+          )
+        }
+      })
+
+      picture.pixels = pixels
+
+      return picture.save()
     })
 }
