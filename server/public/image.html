@@ -1,0 +1,91 @@
+<html>
+<head>
+  <title>bigPICTURE Image Viewer</title>
+</head>
+<body>
+
+  <div>
+    <canvas id="canvas" style="border: 1px solid #ccc"></canvas>
+  </div>
+
+  <script src="/socket.io.js"></script>
+  <script>
+  (function() {
+    var image = null;
+    var pictures = [];
+    var PICTURE_SIZE;
+
+    var canvas = document.querySelector('#canvas');
+    var ctx = canvas.getContext('2d')
+
+
+    var socket = io.connect('/image');
+    socket.emit('setImage', '56a2f296b2a42be6ec6d9296')
+
+    socket.on('getImage', function (data) {
+      console.log('getImage', data)
+      image = data.image;
+      pictures = data.pictures;
+      PICTURE_SIZE = data.size;
+
+      render();
+    });
+
+    socket.on('updatePicture', function (picture) {
+      console.log('update', picture)
+    })
+
+    function drawPictureCanvas(picture) {
+      var canvas = picture.canvas;
+      if (!canvas) {
+        canvas = document.createElement('canvas');
+        canvas.width = PICTURE_SIZE;
+        canvas.height = PICTURE_SIZE;
+      }
+
+      var ctx = canvas.getContext('2d');
+
+      var pixels = picture.pixels;
+
+      for (var y = 0; y < pixels.length; y++) {
+        var row = pixels[y];
+        for (var x = 0; x < row.length; x++) {
+          var color = row[x];
+          if (color >= 0) {
+            ctx.fillStyle = image.colors[color];
+            ctx.fillRect(x, y, 1, 1);
+          }
+        }
+      }
+
+      picture.canvas = canvas;
+    }
+
+    function render() {
+      if (!image) return;
+      canvas.width = image.width;
+      canvas.height = image.height;
+
+      var drawnPictures = pictures.filter(function (picture) {
+        return picture.pixels;
+      })
+
+      drawnPictures.forEach(drawPictureCanvas);
+
+      drawnPictures.forEach(function (picture) {
+        var scale = image.width / image.columns;
+        ctx.imageSmoothingEnabled = false
+        ctx.drawImage(
+          picture.canvas,
+          picture.x * scale,
+          picture.y * scale,
+          scale,
+          scale
+        )
+      })
+    }
+
+  })();
+  </script>
+</body>
+</html>

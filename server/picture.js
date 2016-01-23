@@ -35,6 +35,8 @@ const addImageData = (picture, imageObj) => {
   p.size = PICTURE_SIZE
   p._id = _id
   p.pixels = JSON.parse(pixels)
+  p.x = x
+  p.y = y
   return p
 }
 
@@ -129,6 +131,7 @@ export function getPicture(id) {
     .populate('image')
     .exec()
     .then(picture => {
+      if (!picture) return null
       return addImageData(picture, picture.image)
     })
 }
@@ -158,4 +161,23 @@ export function savePicture({ _id, pixels, done = false }) {
       console.log('saving picutre', _id, pixels.length)
       return picture.save()
     })
+}
+
+export function getFullImage(imageId) {
+  return Promise.all([
+    Image.findById(imageId).exec(),
+    Picture.find({
+      image: imageId,
+      overwritten: false
+    })
+      .sort('x y')
+      .select('pixels x y _id done')
+      .exec()
+  ]).then(([image, pictures]) => {
+    return {
+      image,
+      pictures: pictures.map(picture => addImageData(picture, image)),
+      size: PICTURE_SIZE
+    }
+  })
 }
