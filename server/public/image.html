@@ -38,8 +38,13 @@
           pictures[i] = picture;
           drawPictureCanvas(picture)
           renderPicture(picture)
+          return;
         }
       }
+
+      pictures.push(picture);
+      drawPictureCanvas(picture);
+      renderPicture(picture);
     })
 
     function drawPictureCanvas(picture) {
