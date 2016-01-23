@@ -18,6 +18,7 @@
     var grid_on = true;
 
     var isDown = false;
+    var mouseLeft = false;
 
     var drawMode = false;
 
@@ -117,6 +118,7 @@
             $("#colorContainer").append(colorButton);
             $("#btn_"+i).click(function() {
                 selectedColor = parseInt(this.id.replace( /^\D+/g, ''));
+                drawMode = true;
             })
         }
     }
@@ -144,8 +146,17 @@
 
     }).mouseup(function (e) {
         isDown = false;
-    }).mouseout(function (e) {
+    }).mouseleave(function (e) {
+        
+        if (isDown) mouseLeft = true;
+        
         isDown = false;
+    }).mouseenter(function (e) {
+
+        if (mouseLeft) isDown = true;
+
+        mouseLeft = false;
+
     }).mousemove(function (e) {
         // Move Mode
         if (!drawMode) {
@@ -161,6 +172,10 @@
                 renderPicture();
             }
         }
+    });
+
+    $(document).mouseup(function (e) {
+        mouseLeft = false;
     });
 
     // Mousewheel
