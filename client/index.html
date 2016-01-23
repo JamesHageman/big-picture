@@ -10,35 +10,54 @@
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-    <div class="drawContainer">
-        <div class="canvasContainer">
-            <canvas id="drawingboard">
-                Sorry, looks like your browser doesn't support HTML5 Canvas!
-            </canvas>
+    <div class="container">
+        <div class="header">
+            <h1>BIGpicture</h1>
         </div>
-        <div class="controls">
-            <div class = "modeContainer">
-                <button class="btn btn-default" id="btn_draw">Free Draw</button>
-                <button class="btn btn-default" id="btn_fill">Bucket</button>
-                <button class="btn btn-default" id="btn_move">Move</button>
+        <div class="drawContainer">
+            <div class="canvasContainer">
+                <canvas id="drawingboard">
+                    Sorry, looks like your browser doesn't support HTML5 Canvas!
+                </canvas>
             </div>
-            <div class = "renderOptsContainer">
-                <button class="btn btn-default" id="btn_toggle_grid">Toggle Grid</button>
-                <button class="btn btn-default" id="btn_undo">Undo</button>
-            </div>
-            <div id="colorContainer">
-                <h1>Colors:</h1>
-            </div>
-            <div class = "comContainer">
-                
+            <div class="controls">
+                <div class = "modeContainer">
+                    <label for="mode" class="control-label input-group"></label>
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-default" id="btn_draw">
+                            <input type="radio" name="mode" value="freehand">Free Draw
+                        </label>
+                        <label class="btn btn-default" id="btn_fill">
+                            <input type="radio" name="mode" value="fill">Bucket
+                        </label>
+                        <label class="btn btn-default" id="btn_move">
+                            <input type="radio" name="mode" value="move" class="active">Move
+                        </label>
+                    </div>
+                </div>
+                <div class = "renderOptsContainer">
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-default" id="btn_toggle_grid">
+                            <input type="checkbox" checked="">Toggle Grid
+                        </label>
+                    </div>
+                    <button class="btn btn-default" id="btn_undo">Undo</button>
+                </div>
+                <div id="colorContainer">
+                    <h1>Colors:</h1>
+                </div>
+                <div class = "comContainer">
+                    
+                </div>
             </div>
         </div>
-    </div>
-    <div class="startContainer">
-        <button class="btn btn-default" id="btn_start">Start!</button>
+        <div class="startContainer">
+            <button class="btn btn-default" id="btn_start">Start!</button>
+        </div>
     </div>
     
     <script src="js/jquery-2.2.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <script src="socket.io.js"></script>
     <script src="main.js"></script>
 </body>

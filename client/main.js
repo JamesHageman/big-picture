@@ -19,7 +19,6 @@
 
     var isDown = false;
     var mouseLeft = false;
-    var mouseInCanvas = false;
 
     var selected_tool = "move";
 
@@ -114,6 +113,7 @@
     }
 
     function undo() {
+        if (undo_states.length == 0) return;
         var oldstate = undo_states.pop();
 
         for (var r = 0; r < DIMS; ++r) {
@@ -196,140 +196,134 @@
         }
     }
 
-    // -------------------- MUH WEBSOCKETS --------------------//
-
-
     //--------------------- EVENT HANDLERS --------------------//
+    function addDrawEventHandlers () {
+        $('#drawingboard').mousedown(function (e) {
+            isDown = true;
+            
+            // Move Mode
+            if (selected_tool == "move") {
+                pX = e.pageX;
+                pY = e.pageY;
+            }
 
-    $('#drawingboard').mousedown(function (e) {
-        isDown = true;
-        
-        // Move Mode
-        if (selected_tool == "move") {
-            pX = e.pageX;
-            pY = e.pageY;
-        }
+            // Freehand Mode
+            if (selected_tool == "freehand") {
+                // save canvas state at start of fill
+                savePicture();
 
-        // Freehand Mode
-        if (selected_tool == "freehand") {
-            // save canvas state at start of fill
-            savePicture();
+                var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
 
-            var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
+                if (picture[tile.r][tile.c] != selectedColor) {
+                    picture[tile.r][tile.c] = selectedColor;
+                    renderPicture();
+                }
+            }
 
-            if (picture[tile.r][tile.c] != selectedColor) {
-                picture[tile.r][tile.c] = selectedColor;
-                renderPicture();
+            // Fill Mode
+            if (selected_tool == "fill") {
+                // save canvas state at start of fill
+                savePicture();
+
+                var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
+
+                if (picture[tile.r][tile.c] != selectedColor) {
+                    fill(picture, tile.r, tile.c, selectedColor);
+                    renderPicture();
+                }
+            }
+        }).mouseup(function (e) {
+            isDown = false;
+        }).mouseleave(function (e) {
+            if (isDown) mouseLeft = true;
+            
+            isDown = false;
+        }).mouseenter(function (e) {
+            if (mouseLeft) isDown = true;
+
+            mouseLeft = false;
+
+        }).mousemove(function (e) {
+            // Move Mode
+            if (selected_tool == "move") {
+                if (isDown) panPicture(e);
+            }
+
+            // Draw Mode
+            if (selected_tool == "freehand" && isDown) {
+                var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
+
+                if (picture[tile.r][tile.c] != selectedColor) {
+                    picture[tile.r][tile.c] = selectedColor;
+                    renderPicture();
+                }
+            }
+        });
+
+        $(document).mouseup(function (e) {
+            mouseLeft = false;
+        });
+
+        // Mousewheel
+        function wheel(event) {
+            // Move Mode
+            if (selected_tool == "move"){
+                var delta = 0;
+                if (!event) event = window.event;
+                if (event.wheelDelta) {
+                    delta = event.wheelDelta / 120;
+                } else if (event.detail) {
+                    delta = -event.detail / 3;
+                }
+                if (delta) {
+                    zoomPicture(delta);
+                }
+                if (event.preventDefault) {
+                    event.preventDefault();
+                }
+                event.returnValue = false;
+            }
+
+            // Draw Mode
+            if (selected_tool == "freehand") {
+
             }
         }
 
-        // Fill Mode
-        if (selected_tool == "fill") {
-            // save canvas state at start of fill
-            savePicture();
-
-            var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
-
-            if (picture[tile.r][tile.c] != selectedColor) {
-                fill(picture, tile.r, tile.c, selectedColor);
-                renderPicture();
-            }
+        if (window.addEventListener) {
+            window.addEventListener('DOMMouseScroll', wheel, false);
         }
-    }).mouseup(function (e) {
-        isDown = false;
-    }).mouseleave(function (e) {
-        mouseInCanvas = false;
+        canvas.onmousewheel = wheel;
 
-        if (isDown) mouseLeft = true;
-        
-        isDown = false;
-    }).mouseenter(function (e) {
-        mouseInCanvas = true;
 
-        if (mouseLeft) isDown = true;
+        // Buttons
+        $("#btn_draw").click(function(){
+            selected_tool = "freehand";
 
-        mouseLeft = false;
+            console.log("freehand");
+        });
+        $("#btn_fill").click(function(){
+            selected_tool = "fill";
 
-    }).mousemove(function (e) {
-        // Move Mode
-        if (selected_tool == "move") {
-            if (isDown) panPicture(e);
-        }
+            console.log("fill");
+        });
+        $("#btn_move").click(function(){
+            selected_tool = "move";
 
-        // Draw Mode
-        if (selected_tool == "freehand" && isDown) {
-            var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
+            console.log("move");
+        });
 
-            if (picture[tile.r][tile.c] != selectedColor) {
-                picture[tile.r][tile.c] = selectedColor;
-                renderPicture();
-            }
-        }
-    });
+        $("#btn_toggle_grid").click(function(){
+            grid_on = !grid_on;
+            console.log("grid toggled " + ((grid_on)?"on":"off"));
+            renderPicture();
+        });
+        $("#btn_undo").click(function(){
+            undo();
 
-    $(document).mouseup(function (e) {
-        mouseLeft = false;
-    });
-
-    // Mousewheel
-    function wheel(event) {
-        // Move Mode
-        if (selected_tool == "move"){
-            var delta = 0;
-            if (!event) event = window.event;
-            if (event.wheelDelta) {
-                delta = event.wheelDelta / 120;
-            } else if (event.detail) {
-                delta = -event.detail / 3;
-            }
-            if (delta) {
-                zoomPicture(delta);
-            }
-            if (event.preventDefault) {
-                event.preventDefault();
-            }
-            event.returnValue = false;
-        }
-
-        // Draw Mode
-        if (selected_tool == "freehand") {
-
-        }
+            console.log("undone");
+        });
     }
-
-    if (window.addEventListener) {
-        window.addEventListener('DOMMouseScroll', wheel, false);
-    }
-    window.onmousewheel = document.onmousewheel = wheel;
-
-
-    // Buttons
-    $("#btn_draw").click(function(){
-        selected_tool = "freehand";
-
-        console.log("freehand");
-    });
-    $("#btn_fill").click(function(){
-        selected_tool = "fill";
-
-        console.log("fill");
-    });
-    $("#btn_move").click(function(){
-        selected_tool = "move";
-
-        console.log("move");
-    });
-
-    $("#btn_toggle_grid").click(function(){
-        grid_on = !grid_on;
-        console.log("grid toggled " + ((grid_on)?"on":"off"));
-        renderPicture();
-    });
-    $("#btn_undo").click(function(){
-        undo();
-
-        console.log("undone");
-    });
 
 
     //--------------- MUH WEBSAHKETS -------------------//
@@ -371,10 +365,15 @@
 
         // generate / load picture
         DIMS = picture_obj.size;
-        picture = genEmptyPicture(DIMS);
+        if (picture_obj.pixels == null) picture = genEmptyPicture(DIMS);
+        else picture = picture_obj.pixels;
+        
 
         // Inital render
         renderPicture();
+
+        // Add event handlers
+        addDrawEventHandlers();
 
         // show the board
         $(".startContainer").css({display:"none"});

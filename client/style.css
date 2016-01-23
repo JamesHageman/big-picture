@@ -1,13 +1,14 @@
 .drawContainer {
-    margin: auto;
     position: relative;
-    width: 768px;
 
     display: none;
 }
 .startContainer {
-    margin: auto;
     position: relative;
+}
+
+.container {
+    margin: auto;
     width: 768px;
 }
 
