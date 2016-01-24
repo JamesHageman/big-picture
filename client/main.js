@@ -552,6 +552,8 @@
         });
         console.log("sent");
 
+        undo_states = [];
+
         enterMainView()
     }
 
