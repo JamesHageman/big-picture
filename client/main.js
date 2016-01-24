@@ -230,7 +230,6 @@
     }
 
     socket.on("getImages", function (image_object) {
-        console.log(image_object);
         renderMainScreen(image_object);
     })
 
@@ -247,8 +246,6 @@
         </tr>");
 
         for (var i = image_object.inProgress.length - 1; i >= 0; i--) {
-            console.log(image_object.inProgress[i]);
-
             var row = $("<tr></tr>");
 
             var name = $("<td>"+image_object.inProgress[i].friendlyName+"</td>");
@@ -510,6 +507,19 @@
 
             console.log("cleared");
         });
+
+
+        $("#btn_cancel").click(function(){
+            socket.emit("cancelPicture");
+        });
+        socket.on("pictureCancelled", function () {
+            undo_states = [];
+
+            enterMainView();
+
+            console.log("cancelled");
+        });
+
 
         $("#btn_done").click(sendFinishedPicture);
     }
