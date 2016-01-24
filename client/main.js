@@ -7,8 +7,7 @@
     var GH;
 
     var socket = io.connect(
-      window.location.host.startsWith('localhost') ?
-        'http://192.168.43.150:8080/' : '/'
+      window.location.host.startsWith('localhost') ? 'http://192.168.43.150:8080/' : '/'
     );
 
     //-------------------------- VARS -------------------------//
@@ -87,7 +86,7 @@
         };
     }
 
-    function fill(data, x, y, newValue) {
+    function floodfill(data, x, y, newValue) {
         // get target value
         var target = data[x][y];
 
@@ -234,6 +233,9 @@
     })
 
     function renderMainScreen(image_object) {
+        console.log(image_object)
+
+        // WIPS
         if ($(".wips").is(":empty") == false) {
             $(".wips").empty();
         }
@@ -299,14 +301,19 @@
 
             var contribute = $('<td>&nbsp;&nbsp;&nbsp;</td>');
 
-            contribute.css({"background-color":"lightgrey"});
             contribute.css({cursor:"pointer"});
 
+            
+            var percentColor = getColorByPercent(image_object.inProgress[i].percent); 
+            contribute.css({"background-color":percentColor});
+
+            contribute.data("percent", image_object.inProgress[i].percent);
             contribute.hover(
                 function() {
                     $( this ).css({"background-color":"lightblue"});
                 }, function() {
-                    $( this ).css({"background-color":"lightgrey"});
+                    var percentColor = getColorByPercent($(this).data("percent"));
+                    $( this ).css({"background-color":percentColor});
                 }
             );
 
@@ -317,6 +324,38 @@
             row.append(contribute);
 
             $(".wips").append(row);
+        };
+
+        // GALLERY
+
+        if ($(".gallery").is(":empty") == false) {
+            $(".gallery").empty();
+        }
+
+        for (var i = image_object.complete.length - 1; i >= 0; i--) {
+            var gallery_obj = $("<div class='gallery-obj'></div>");
+
+            // name
+            var name = $("<h3>"+image_object.complete[i].friendlyName+"</h3>");
+            gallery_obj.append(name);
+
+            // thumb
+            var img = $("<img src='" + (window.location.host.startsWith('localhost') ? 'http://192.168.43.150:8080/' : '/') + image_object.complete[i].fileName + "'>")
+            gallery_obj.append(img);
+
+            gallery_obj.hover(
+                function() {
+                    $( this ).css({"background-color":"lightblue"});
+                }, function() {
+                    $( this ).css({"background-color":"lightgrey"});
+                }
+            );
+
+            gallery_obj.data("_id", image_object.inProgress[i]._id);
+            gallery_obj.click(function () {
+                window.location.href = "/image.html?id=" + $(this).data("_id");
+            })
+            $(".gallery").append(gallery_obj);
         };
     }
 
@@ -370,7 +409,7 @@
             var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
 
             if (picture[tile.r][tile.c] != selectedColor) {
-                fill(picture, tile.r, tile.c, selectedColor);
+                floodfill(picture, tile.r, tile.c, selectedColor);
                 renderPicture();
             }
         }
@@ -698,4 +737,20 @@
         return {x:canvasX, y:canvasY}
     }
     HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
+
+    function getColorByPercent(y) {
+    /* Color by Height */
+    var heightColoring;
+    var tempDistance;
+    if (y > 2 * 100 / 3) {
+        heightColoring = 'rgb(255,0,0)';
+    } else if (y > 100 / 3) {
+        tempDistance = Math.floor(y * 255 / (100 / 3));
+        heightColoring = 'rgb(255,' + (255 - (tempDistance % 255)) + ',0)';
+    } else {
+        tempDistance = Math.floor(y * 255 / (100 / 3));
+        heightColoring = 'rgb(' + tempDistance + ',255,0)';
+    }
+    return heightColoring;
+};
 // })();

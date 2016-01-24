@@ -20,7 +20,7 @@ body {
     margin-bottom: 20px;
 
     max-width: 1200px;
-    min-width: 300px;
+    min-width: 520px;
 
     background-color: white;
     border-radius: 10px;
@@ -35,7 +35,7 @@ body {
     margin-top: 20px;
 
     max-width: 1200px;
-    min-width: 300px;
+    min-width: 520px;
 
     background-color: white;
     border-radius: 10px;
@@ -79,10 +79,14 @@ canvas {
 
 .main-left {
     width: 49%;
+    height: 500px;
+    overflow-y: scroll;
     display: inline-block;
 }
 .main-right {
     width: 50%;
+    height: 500px;
+    overflow-y: scroll;
     display: inline-block;
 }
 
@@ -121,4 +125,24 @@ td:first-child {
 td, th {
     padding: 5px;
     transition: background-color .25s;
+}
+
+.gallery-obj {
+    width: 80%;
+    text-align: center;
+    overflow: hidden;
+    border: 1px black solid;
+    border-radius: 6px;
+    margin: auto;
+    margin-bottom: 10px;
+    padding-bottom: 20px;
+    transition: background-color .25s;
+    background-color: lightgrey;
+    cursor: pointer;
+}
+
+.gallery-obj img {
+    width: 70%;
+    display: inline-block;
+    border-radius: 6px;
 }
