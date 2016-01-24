@@ -6,7 +6,10 @@
     var GW;
     var GH;
 
-    var socket = io.connect('http://192.168.43.150:8080/');
+    var socket = io.connect(
+      window.location.host.startsWith('localhost') ?
+        'http://192.168.43.150:8080/' : '/'
+    );
 
     //-------------------------- VARS -------------------------//
 
@@ -46,7 +49,7 @@
     var inDrawingMode = false;
 
     //------------------------- LOGICZ ------------------------//
-    
+
     function genEmptyPicture() {
         var picture = [];
         for (var r = 0; r < DIMS; ++r) {
@@ -59,8 +62,8 @@
             }
         }
         return picture;
-    } 
-    
+    }
+
     /* returns {r:row, c:column} given mouse position of canvas */
     function resolveClickedPictureElement(cords) {
         eR = cords.y;
@@ -173,7 +176,7 @@
                     ctx.fillStyle = colors[picture[r][c]];
                     ctx.fillRect(lOffset, tOffset, SIZE+1, SIZE+1); // +1 cuz zoom
                 }
-                
+
 
                 if (grid_on) {
                     ctx.strokeStyle = "rgba(100,100,100,0.5)";
@@ -328,7 +331,7 @@
                 b = tile.c + j;
 
                 if (Math.sqrt(i*i + j*j) <= (r-1)) {
-                    
+
                     try {
                         picture[a][b] = selectedColor;
                     } catch (e) {}
@@ -341,7 +344,7 @@
     function addDrawEventHandlers () {
         $('#drawingboard').mousedown(function (e) {
             isDown = true;
-            
+
             // Move Mode
             if (selected_tool == "move") {
                 pX = e.pageX;
@@ -380,7 +383,7 @@
             updatePicture();
         }).mouseleave(function (e) {
             if (isDown) mouseLeft = true;
-            
+
             isDown = false;
         }).mouseenter(function (e) {
             if (mouseLeft) isDown = true;
