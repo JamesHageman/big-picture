@@ -136,7 +136,12 @@ export default function start(server, sessionMiddleware, cookieMiddleware) {
 
       if (currentPicture) {
         cancelPicture(currentPicture)
-          .then(() => socket.emit('pictureCancelled'))
+          .then(() => {
+            socket.handshake.session.currentPicture = null
+            socket.handshake.session.save()
+            socket.emit('pictureCancelled')
+          },
+            errorHandler(socket))
       }
     })
   })
