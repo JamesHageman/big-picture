@@ -615,7 +615,7 @@
         initColorButtons();
 
         // load image
-        image = getImage((window.location.host.startsWith('localhost') ? 'http://192.168.43.150:8080/' : '/') + picture_obj.imageURL);
+        image = getImage((window.location.host.startsWith('localhost') ? 'http://192.168.43.150:8080' : '') + picture_obj.imageURL);
 
         picture_id = picture_obj._id;
 
