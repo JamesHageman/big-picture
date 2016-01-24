@@ -207,3 +207,7 @@ export function getImages() {
     }
   })
 }
+
+export function cancelPicture(id) {
+  return Picture.remove({ _id: id }).exec()
+}

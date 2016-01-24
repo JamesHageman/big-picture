@@ -8,7 +8,8 @@ import {
   savePicture,
   getPicture,
   getFullImage,
-  getImages
+  getImages,
+  cancelPicture
 } from './picture'
 
 let io
@@ -128,6 +129,15 @@ export default function start(server, sessionMiddleware, cookieMiddleware) {
           complete, inProgress
         })
       })
+    })
+
+    socket.on('cancelPicture', () => {
+      const { currentPicture } = socket.handshake.session
+
+      if (currentPicture) {
+        cancelPicture(currentPicture)
+          .then(() => socket.emit('pictureCancelled'))
+      }
     })
   })
 }
