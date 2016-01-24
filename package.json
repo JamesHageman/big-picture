@@ -4,6 +4,7 @@
   "description": "Art thing for waterloohacks 2016",
   "main": "server/server.js",
   "scripts": {
+    "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
