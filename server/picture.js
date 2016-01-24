@@ -55,9 +55,15 @@ const overwrite = (picture, replacement) => {
 }
 
 function getRandomImage() {
-  return Image.findOne()
+  return Image.findOne({
+    complete: { $ne: true }
+  })
     .sort('-createdAt')
-    .exec()
+    .exec().then(image => {
+      if (!image) throw new Error('Can`t find image')
+
+      return image
+    })
 }
 
 function checkImageComplete(imageId) {
