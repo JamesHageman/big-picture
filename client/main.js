@@ -403,26 +403,24 @@
         }).on("touchstart",function (e) {
             e.preventDefault();
             e = e.originalEvent.touches[0];
-
             onDown(e);
         }).mouseup(function (e) {
             isDown = false;
             updatePicture();
+        }).on("touchend",function (e) {
+            isDown = false;
+            updatePicture();
         }).mouseleave(function (e) {
             if (isDown) mouseLeft = true;
-
             isDown = false;
         }).mouseenter(function (e) {
             if (mouseLeft) isDown = true;
-
             mouseLeft = false;
-
         }).mousemove(function (e) {
             onMove(e);
         }).on("touchmove", function (e) {
             e.preventDefault();
             e = e.originalEvent.touches[0];
-
             onMove(e);
         });
 
