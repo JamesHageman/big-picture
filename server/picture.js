@@ -55,6 +55,7 @@ const overwrite = (picture, replacement) => {
 
 function getRandomImage() {
   return Image.findOne()
+    .sort('-createdAt')
     .exec()
 }
 
