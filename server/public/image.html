@@ -8,7 +8,7 @@
     <canvas id="canvas" style="border: 1px solid #ccc"></canvas>
   </div>
 
-  <script src="/socket.io.js"></script>
+  <script src="socket.io.js"></script>
   <script>
   (function() {
     function getQueryVariable(variable) {
@@ -27,11 +27,11 @@
     var pictures = [];
     var PICTURE_SIZE;
 
-    var canvas = document.querySelector('#canvas');
+    var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d')
 
 
-    var socket = io.connect('/');
+    var socket = io.connect('http://192.168.43.150:8080/');
     var id = getQueryVariable('id')
 
     if (!id) alert('no `id` supplied')
@@ -115,6 +115,62 @@
       drawnPictures.forEach(renderPicture)
     }
 
+
+    canvas.onclick = function (e) {
+      var cords = resolveClickedTile(canvas.relMouseCoords(e));
+      
+      for (var i = 0; i < pictures.length; i++) {
+        if (pictures[i].x === cords.c && pictures[i].y === cords.r) {
+          socket.emit("flagPicture",pictures[i]._id);
+          console.log("flagged tile at " + cords.c + ", " + cords.r)
+          return;
+        }
+      }
+    };
+
+
+
+
+
+    //------------------------- MAGIC -------------------------//
+
+    function resolveClickedTile(cords) {
+      eR = cords.y;
+      eC = cords.x;
+
+      var size = Math.floor(image.width / image.columns);
+
+      // get cords
+      eR = Math.floor(eR / size);
+      eC = Math.floor(eC / size);
+
+      return {
+          r:eR,
+          c:eC
+      };
+    }
+
+    function relMouseCoords(event){
+      var totalOffsetX = 0;
+      var totalOffsetY = 0;
+      var canvasX = 0;
+      var canvasY = 0;
+      var currentElement = this;
+
+      var scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+
+      do{
+        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+      }
+      while(currentElement = currentElement.offsetParent)
+
+      canvasX = event.pageX - totalOffsetX;
+      canvasY = event.pageY - totalOffsetY - scrollTop;
+
+      return {x:canvasX, y:canvasY}
+    }
+    HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
   })();
   </script>
 </body>
