@@ -28,6 +28,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     @IBOutlet var worksInProgressButton : UIButton!
     @IBOutlet var completedWorksButton : UIButton!
     @IBOutlet var galleryCollectionView : UICollectionView!
+    @IBOutlet var emptyAlertLabel : UILabel!
     
     override func viewDidLoad() {
         socketDelegate = SocketDelegate(url: SocketDelegate.urlBase, menuVC: self)
@@ -36,13 +37,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         shouldScrollTableView = true
         picturesTableView.canCancelContentTouches = false
         
-        let layoutGuide = UICollectionViewFlowLayout()
+        let layoutGuide = galleryCollectionView.collectionViewLayout as! UICollectionViewFlowLayout
         let spacing = CGFloat(10)
-        layoutGuide.itemSize = CGSizeMake((self.view.frame.width - (spacing * 3)) / 2, (self.view.frame.width - (spacing * 3)) / 2 * 1.2)
-        layoutGuide.minimumInteritemSpacing = spacing / 2
+        layoutGuide.itemSize = CGSizeMake((self.view.frame.width - (30 + 30 + 15)) / 2, (self.view.frame.width - (30 + 30 + 15)) / 2 * 1.2)
+        /*layoutGuide.minimumInteritemSpacing = spacing / 2
         layoutGuide.minimumLineSpacing = spacing / 2
         layoutGuide.sectionInset = UIEdgeInsets(top: spacing, left: spacing, bottom: spacing, right: spacing)
-        galleryCollectionView.collectionViewLayout = layoutGuide
+        galleryCollectionView.collectionViewLayout = layoutGuide*/
     }
     
     @IBAction func beginPictureDrawing() {
@@ -80,6 +81,13 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             galleryCollectionView.hidden = true
             picturesTableView.hidden = false
             titleLabel.text = "Works in Progress"
+            if (worksInProgress?.count == 0) {
+                emptyAlertLabel.text = "Nothing in progress!"
+                emptyAlertLabel.hidden = false
+            }
+            else {
+                emptyAlertLabel.hidden = true
+            }
         }
         else if (sender == completedWorksButton) {
             //display completed works
@@ -88,12 +96,23 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
             galleryCollectionView.hidden = false
             picturesTableView.hidden = true
             titleLabel.text = "Gallery"
+            if (completedImages?.count == 0) {
+                emptyAlertLabel.text = "Nothing in the gallery!"
+                emptyAlertLabel.hidden = false
+            }
+            else {
+                emptyAlertLabel.hidden = true
+            }
         }
     }
     
     func receivePictures(wip: [Picture], comp: [Picture]) {
         worksInProgress = wip
         completedImages = comp
+        if (worksInProgress?.count == 0 && picturesTableView.hidden == false ||
+            completedImages?.count == 0 && galleryCollectionView.hidden == false) {
+            emptyAlertLabel.hidden = false
+        }
         picturesTableView.reloadData()
         galleryCollectionView.reloadData()
     }

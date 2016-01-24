@@ -31,12 +31,23 @@ class CompletedWorkCollectionViewCell: UICollectionViewCell {
         }
         else {
             pic.imageLoadedCallback = { (img: UIImage) -> Void in
-                self.thumbnailView.image = img
                 dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    self.setNeedsDisplay()
+                    self.thumbnailView.image = img
                 })
             }
         }
+    }
+    
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        fillColor = UIColor(red: 193/255.0, green: 213/255.0, blue: 219/255.0, alpha: 0.8)
+        setNeedsDisplay()
+        nextResponder()?.touchesBegan(touches, withEvent: event)
+    }
+    
+    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        fillColor = UIColor(red: 222.0/255.0, green: 243.0/255.0, blue: 250.0/255.0, alpha: 0.8)
+        setNeedsDisplay()
+        nextResponder()?.touchesEnded(touches, withEvent: event)
     }
     
     override func drawRect(rect: CGRect) {

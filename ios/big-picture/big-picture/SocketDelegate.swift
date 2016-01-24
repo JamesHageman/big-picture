@@ -11,7 +11,7 @@ import Socket_IO_Client_Swift
 
 class SocketDelegate: AnyObject {
     
-    static let urlBase = "192.168.43.150:8080"
+    static let urlBase = "murmuring-journey-71259.herokuapp.com"//"192.168.43.150:8080"
     let socket : SocketIOClient
     var imgCallback : ((picture: Picture) -> Void)?
     var lastPixelArray : [[Int]]?
@@ -81,6 +81,14 @@ class SocketDelegate: AnyObject {
                 }
                 picture.pictures = pictureArrays
                 self.imgCallback!(picture: picture)
+            }
+        }
+        
+        socket.on("updatePicture") { (data: [AnyObject], ack: SocketAckEmitter?) -> Void in
+            if let dict = data[0] as? NSDictionary {
+                if (self.imageProgressVC != nil) {
+                    self.imageProgressVC.updatePicture(Picture(dict: dict))
+                }
             }
         }
         

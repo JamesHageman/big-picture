@@ -50,10 +50,22 @@ class PictureDrawViewController: UIViewController {
         pictureDrawView.initializeValues(availableColours)
         pictureDrawView.pictureSideLength = picSize
         titleLabel.text = imageFriendlyName
+        
         // Do any additional setup after loading the view, typically from a nib.
     }
     
-    @IBAction func changeSelectedColor(sender: UIButton) {
+    @IBAction func changeSelectedColor(sender: ColorButton) {
+        let t = sender.tag
+        for button in colorButtons {
+            if (button.shouldAppearDarkened != nil && button.shouldAppearDarkened! == true) {
+                button.shouldAppearDarkened = false
+                button.setNeedsDisplay()
+            }
+            if (button.tag == t) {
+                button.shouldAppearDarkened = true
+                button.setNeedsDisplay()
+            }
+        }
         pictureDrawView.currentColorInt = sender.tag
     }
     
@@ -84,8 +96,13 @@ class PictureDrawViewController: UIViewController {
         }
     }
     
-    @IBAction func changeStrokeWidth(sender: UISlider) {
-        pictureDrawView.strokeWidth = (Int)(floor(sender.value + 0.5))
+    @IBAction func changeStrokeWidth(sender: UISegmentedControl) {
+        if (sender.selectedSegmentIndex == 3) {
+            pictureDrawView.strokeWidth = -1
+        }
+        else {
+            pictureDrawView.strokeWidth = sender.selectedSegmentIndex
+        }
     }
     
     func setPicture(pic: Picture, sDelegate: SocketDelegate) {

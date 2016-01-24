@@ -94,14 +94,40 @@ class PictureDrawView: UIView {
         return true
     }
     
+    func fillFromPoint(point: (x: Int, y: Int), var target: Int, newValue: Int) {
+        if (target == -2) {
+            target = pictureStateStack.last![point.y][point.x]
+        }
+        if (target == newValue) {
+            return
+        }
+        if (point.x >= 0 && point.x < pictureSideLength && point.y >= 0 && point.y < pictureSideLength) {
+            if (pictureStateStack.last![point.y][point.x] == target) {
+                pictureStateStack[pictureStateStack.count-1][point.y][point.x] = newValue
+                fillFromPoint((x: point.x - 1, y: point.y), target: target, newValue: newValue)
+                fillFromPoint((x: point.x + 1, y: point.y), target: target, newValue: newValue)
+                fillFromPoint((x: point.x, y: point.y - 1), target: target, newValue: newValue)
+                fillFromPoint((x: point.x, y: point.y + 1), target: target, newValue: newValue)
+            }
+        }
+        setNeedsDisplay()
+    }
+    
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         appendNewStack()
-        addTouchLocationToStacks(touches.first!.locationInView(self))
+        if (strokeWidth == -1) {
+            fillFromPoint(pixelCoordinateFromTouchLocation(touches.first!.locationInView(self)), target: -2, newValue: currentColorInt)
+        }
+        else {
+            addTouchLocationToStacks(touches.first!.locationInView(self))
+        }
     }
     
     override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
        // print(touches.first!.locationInView(self))
-        addTouchLocationToStacks(touches.first!.locationInView(self))
+        if (strokeWidth != -1) {
+            addTouchLocationToStacks(touches.first!.locationInView(self))
+        }
     }
 
     override func drawRect(rect: CGRect) {

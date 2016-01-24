@@ -57,6 +57,10 @@ class ImageProgressViewController: UIViewController, UIScrollViewDelegate {
         pixelArrayHold = pixelArray
     }
     
+    func updatePicture(pic: Picture) {
+        
+    }
+    
     func viewForZoomingInScrollView(scrollView: UIScrollView) -> UIView? {
         return imageProgressView
     }
