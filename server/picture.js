@@ -60,6 +60,31 @@ function getRandomImage() {
     .exec()
 }
 
+function checkImageComplete(imageId) {
+  Promise.all([
+    Image.findById(imageId).exec(),
+    Picture.find({
+      image: imageId,
+      overwritten: false,
+      done: true
+    }).select('x y').exec()
+  ]).then(([image, pictures]) => {
+    const uniquePictureCount = image.columns * image.rows
+    let map = {}
+
+    pictures.forEach(picture => {
+      map[ptStr(picture.x, picture.y)] = true
+    })
+
+    if (Object.keys(map).length === uniquePictureCount) {
+      image.complete = true
+      return image.save()
+    }
+
+    return image
+  })
+}
+
 export function createNewPicture(imageId) {
   let imagePromise = null
 
@@ -132,6 +157,8 @@ export function createNewPicture(imageId) {
   }).then(([picture, image]) => {
     if (picture) {
       return addImageData(picture, image)
+    } else {
+      checkImageComplete(image._id)
     }
 
     return picture
@@ -172,8 +199,13 @@ export function savePicture({ _id, pixels, done = false }) {
       picture.done = done
       // picture.markModified('pixels')
 
-      console.log('saving picutre', _id, pixels.length)
-      return picture.save()
+      console.log('saving picture', _id, pixels.length)
+      return picture.save().then(pic => {
+        if (done) {
+          checkImageComplete(pic.image)
+        }
+        return pic
+      })
     })
 }
 
@@ -182,7 +214,8 @@ export function getFullImage(imageId) {
     Image.findById(imageId).exec(),
     Picture.find({
       image: imageId,
-      overwritten: false
+      overwritten: false,
+      pixels: { $ne: null }
     })
       .sort('x y')
       .select('pixels x y _id done')
@@ -198,8 +231,8 @@ export function getFullImage(imageId) {
 
 export function getImages() {
   return Promise.all([
-    Promise.resolve([]),
-    Image.find().exec()
+    Image.find({ complete: true }).exec(),
+    Image.find({ complete: { $ne: true } }).exec()
   ]).then(([complete, inProgress]) => {
     return {
       complete,

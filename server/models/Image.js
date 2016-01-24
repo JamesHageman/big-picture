@@ -9,7 +9,11 @@ const imageSchema = new Schema({
   height: Number,
   colors: [String],
   rows: Number,
-  columns: Number
+  columns: Number,
+  complete: {
+    type: Boolean,
+    default: false
+  }
 })
 
 imageSchema.plugin(timestamps)
