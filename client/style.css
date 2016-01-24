@@ -9,6 +9,10 @@ body {
     -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
 }
 
+.header {
+    width: 100%;
+    text-align: center;
+}
 .not-drawing {
     display: none;
 }
@@ -16,6 +20,8 @@ body {
 .drawContainer {
     position: relative;
     display: none;
+    max-width: 700px;
+    margin: auto;
 }
 .startContainer {
     position: relative;
@@ -24,6 +30,7 @@ body {
 .container {
     margin: auto;
     width: 70%;
+    max-width: 1200px;
 }
 
 canvas {
@@ -57,6 +64,7 @@ canvas {
     width: 40px;
     height: 40px;
     margin-right: 2px;
+    margin-bottom: 2px;
     border-radius: 100%;
 
     display: inline-block;
@@ -77,6 +85,7 @@ td, th {
 
 th {
     border-top: none;
+    background-color: #EEE;
 }
 
 td:first-child {
@@ -86,5 +95,4 @@ td:first-child {
 td, th {
     padding: 5px;
     transition: background-color .25s;
-    cursor: pointer;
 }

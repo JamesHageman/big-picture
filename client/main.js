@@ -240,6 +240,7 @@
             <th>Name</th>\
             <th>Colors</th>\
             <th>View</th>\
+            <th>Draw</th>\
         </tr>");
 
         for (var i = image_object.inProgress.length - 1; i >= 0; i--) {
@@ -250,31 +251,22 @@
             var name = $("<td>"+image_object.inProgress[i].friendlyName+"</td>");
             row.append(name);
 
-            var coloredDots = $("<td></td>")
+
+
+
+
+            var coloredDotsRow = $("<td></td>");
+            var coloredDots = $("<div style='height: 42px; overflow-y: scroll;'></div>")
             for (var j = 0; j < image_object.inProgress[i].colors.length; j++) {
                 var color = image_object.inProgress[i].colors[j];
                 var colordot = $('<div class="color-dot" \
-                                    style="background-color:' + color + ';\
+                                    style="\
+                                        background-color:' + color + ';\
                                 "></div>');
                 coloredDots.append(colordot);
             };
-
-            coloredDots.data("_id", image_object.inProgress[i]._id);
-
-            coloredDots.hover(
-                function() {
-                    $( this ).css({"background-color":"lightgrey"});
-                }, function() {
-                    $( this ).css({"background-color":"white"});
-                }
-            );
-
-            coloredDots.click(function() {
-                socket.emit("requestPicture", $(this).data("_id"));
-            })
-
-            row.append(coloredDots);
-
+            coloredDotsRow.append(coloredDots);
+            row.append(coloredDotsRow);
 
 
 
@@ -285,6 +277,8 @@
             view.data("_id", image_object.inProgress[i]._id);
 
             view.css({"background-color":"lightgrey"});
+            view.css({cursor:"pointer"});
+
             view.hover(
                 function() {
                     $( this ).css({"background-color":"lightblue"});
@@ -297,6 +291,30 @@
                 window.location.href = "/image.html?id=" + $(this).data("_id");
             });
             row.append(view);
+
+
+
+
+
+
+            var contribute = $('<td>&nbsp;&nbsp;&nbsp;</td>');
+
+            contribute.css({"background-color":"lightgrey"});
+            contribute.css({cursor:"pointer"});
+
+            contribute.hover(
+                function() {
+                    $( this ).css({"background-color":"lightblue"});
+                }, function() {
+                    $( this ).css({"background-color":"lightgrey"});
+                }
+            );
+
+            contribute.data("_id", image_object.inProgress[i]._id);
+            contribute.click(function() {
+                socket.emit("requestPicture", $(this).data("_id"));
+            });
+            row.append(contribute);
 
             $(".wips").append(row);
         };
@@ -478,9 +496,9 @@
         $("#btn_done").click(sendFinishedPicture);
     }
 
-    $( window ).resize(function() {
+    function resize () {
         if (inDrawingMode) {
-            SIZE = $(".container").width() / DIMS;
+            SIZE = $(".drawContainer").width() / DIMS;
 
             GW = DIMS*SIZE;
             GH = DIMS*SIZE;
@@ -491,7 +509,8 @@
 
             renderPicture();
         }
-    });
+    }
+    $( window ).resize(resize);
 
     //--------------- MUH WEBSAHKETS -------------------//
 
@@ -562,7 +581,7 @@
         ctx = canvas.getContext("2d");
 
         // Find a nice size for the boxes
-        SIZE = $(".container").width() / DIMS;
+        SIZE = $(".drawContainer").width() / DIMS;
 
         GW = DIMS*SIZE;
         GH = DIMS*SIZE;
@@ -597,6 +616,8 @@
         inDrawingMode= true;
 
         firstrun = false;
+
+        resize();
     })
 
     $(".btn_start").click(function(){
