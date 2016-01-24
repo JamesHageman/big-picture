@@ -43,6 +43,7 @@ app.use(sessionMiddleware)
 
 app.use(express.static(path.join(__dirname, '../client')))
 app.use(express.static(path.join(__dirname, '/public')))
+app.use(express.static(path.join(__dirname, '/img')))
 
 app.get('/images', (req, res) => {
   Image.find()

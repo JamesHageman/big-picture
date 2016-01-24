@@ -78,10 +78,11 @@ function checkImageComplete(imageId) {
 
     if (Object.keys(map).length === uniquePictureCount) {
       image.complete = true
-      return image.save()
+    } else {
+      image.complete = false
     }
 
-    return image
+    return image.save()
   })
 }
 
