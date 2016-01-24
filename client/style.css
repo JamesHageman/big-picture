@@ -23,7 +23,7 @@ body {
 
 .container {
     margin: auto;
-    width: 60%;
+    width: 70%;
 }
 
 canvas {
@@ -38,4 +38,53 @@ canvas {
 
 .colorbtn {
     width: 50px;
+}
+
+.main-head {
+    width: 100%;
+}
+
+.main-left {
+    width: 49%;
+    display: inline-block;
+}
+.main-right {
+    width: 50%;
+    display: inline-block;
+}
+
+.color-dot {
+    width: 40px;
+    height: 40px;
+    margin-right: 2px;
+    border-radius: 100%;
+
+    display: inline-block;
+    float: left;
+}
+
+table {
+    border-collapse:separate;
+    border:solid black 1px;
+    border-radius:6px;
+    -moz-border-radius:6px;
+}
+
+td, th {
+    border-left:solid black 1px;
+    border-top:solid black 1px;
+}
+
+th {
+    border-top: none;
+}
+
+td:first-child {
+     border-left: none;
+}
+
+td, th {
+    padding: 5px;
+    transition: background-color .25s;
+    cursor: pointer;
 }

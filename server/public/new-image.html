@@ -6,19 +6,13 @@
 
   <div ng-app="app">
     <div ng-controller="NewImageCtrl">
-      <form name="newImageForm">
+      <form name="newImageForm" ng-submit="handleSubmit()">
+        <h1>New Image</h1>
+
+        <hr>
+
         <div>
-          <label>
-            Columns: <input required type="number" ng-model="columns" name="columns" max="24" min="3"/>
-          </label>
-        </div>
-        <div>
-          <label>
-            Rows: {{ calculateRows() }}
-          </label>
-        </div>
-        <div>
-          <button required ngf-select ng-model="image" ngf-pattern="'image/*'"
+          <button required name="image" ngf-select ng-model="image" ngf-pattern="'image/*'"
             ngf-accept="'image/*'">
             Select image
           </button>
@@ -28,6 +22,49 @@
               {{ imageDimensions.width }} x {{ imageDimensions.height }}
             </div>
           </div>
+          {{ newImageForm.image.$invalid ? 'Please add an image' : '' }}
+        </div>
+
+        <hr>
+
+        <div>
+          <label>
+            Name: <input required type="text" ng-model="name" name="name"/>
+          </label>
+        </div>
+
+        <hr>
+
+        <div>
+          <label>
+            Columns: <input required type="number" ng-model="columns" name="columns" max="24" min="3"/>
+            {{ newImageForm.columns.$invalid ? 'Invalid input' : ''}}
+          </label>
+        </div>
+
+        <div>
+          <label>
+            Rows: {{ calculateRows() }}
+          </label>
+        </div>
+
+        <hr>
+
+        <div>
+          Colors:
+
+          <ol>
+            <li ng-repeat="color in colors track by $index">
+              <button type="button" ng-click="colors.splice($index, 1)">-</button>
+              <input type="text" ng-model="colors[$index]" maxlength="6"/>
+            </li>
+            <li ng-show="colors.length < 10"><button type="button" ng-click="colors.push('000000')">+</button></li>
+          </ol>
+
+        </div>
+
+        <div>
+          <input type="submit" value="Submit"/>
         </div>
       </form>
     </div>
@@ -40,6 +77,14 @@
 
     app.controller('NewImageCtrl', function ($scope, Upload) {
       $scope.columns = 8;
+      $scope.colors = [
+        '000000',
+        '000000',
+        '000000',
+        '000000',
+        '000000',
+        '000000'
+      ];
       $scope.imageDimensions = null;
       $scope.$watch('image', function () {
         if ($scope.image) {
@@ -57,6 +102,37 @@
 
         var size = Math.floor($scope.imageDimensions.width / $scope.columns);
         return Math.floor($scope.imageDimensions.height / size);
+      }
+
+      $scope.handleSubmit = function () {
+        if ($scope.newImageForm.$valid) {
+          console.log({
+            name: $scope.name,
+            columns: $scope.columns,
+            image: $scope.image
+          })
+
+          Upload.upload({
+            url: '/uploadImage',
+            data: {
+              image: $scope.image,
+              name: $scope.name,
+              columns: ~~$scope.columns,
+              width: $scope.imageDimensions.width,
+              height: $scope.imageDimensions.height,
+              colors: $scope.colors.map(function (color) {
+                return '#' + color.slice(0, 6).toUpperCase();
+              })
+            },
+            method: 'POST'
+          }).then(function (res) {
+            console.log(res);
+          }, function (reason) {
+            window.location.href = '/';
+          });
+        } else {
+          console.log($scope.newImageForm)
+        }
       }
     });
 

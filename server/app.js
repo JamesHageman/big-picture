@@ -2,6 +2,7 @@ import { Server } from 'http'
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
+import multipart from 'connect-multiparty'
 import fs from 'fs'
 import path from 'path'
 import crop from './crop'
@@ -117,6 +118,64 @@ app.get('/image/:id/pictures', (req, res) => {
         pictures
       })
     })
+})
+
+function addImage({
+  name,
+  columns,
+  fileName,
+  width,
+  height,
+  colors
+}) {
+  const size = Math.floor(width / columns)
+
+  const i = new Image({
+    friendlyName: name,
+    fileName: fileName,
+    width: width,
+    height: height,
+    columns: columns,
+    colors: colors,
+    rows: Math.floor(height / size)
+  })
+
+  return i.save()
+}
+
+app.post('/uploadImage', multipart(), (req, res) => {
+  const image = req.files.image
+  const {
+    name,
+    columns,
+    width,
+    height,
+    colors
+  } = req.body
+
+  console.log(req.body)
+
+  fs.readFile(image.path, (err, data) => {
+    if (err) throw err
+
+    const fileName = `${Date.now()}___${image.originalFilename}`
+    const newPath = path.join(__dirname, '/img/', fileName)
+
+    fs.writeFile(newPath, data, err => {
+      if (err) throw err
+
+      addImage({
+        name,
+        columns,
+        width,
+        height,
+        fileName,
+        colors
+      }).then(image => res.json(image), err => {
+        throw err
+      })
+    })
+  })
 })
 
 const server = Server(app)

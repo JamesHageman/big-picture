@@ -11,6 +11,18 @@
   <script src="/socket.io.js"></script>
   <script>
   (function() {
+    function getQueryVariable(variable) {
+      var query = window.location.search.substring(1);
+      var vars = query.split('&');
+      for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable) {
+              return decodeURIComponent(pair[1]);
+          }
+      }
+      throw new Error('Query variable ' + variable + ' not found');
+    }
+
     var image = null;
     var pictures = [];
     var PICTURE_SIZE;
@@ -20,7 +32,11 @@
 
 
     var socket = io.connect('/');
-    socket.emit('setImage', '56a2f296b2a42be6ec6d9296')
+    var id = getQueryVariable('id')
+
+    if (!id) alert('no `id` supplied')
+
+    socket.emit('setImage', id)
 
     socket.on('getImage', function (data) {
       console.log('getImage', data)
@@ -38,8 +54,13 @@
           pictures[i] = picture;
           drawPictureCanvas(picture)
           renderPicture(picture)
+          return;
         }
       }
+
+      pictures.push(picture);
+      drawPictureCanvas(picture);
+      renderPicture(picture);
     })
 
     function drawPictureCanvas(picture) {

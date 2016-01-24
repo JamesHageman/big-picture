@@ -6,6 +6,8 @@
     var GW;
     var GH;
 
+    var socket = io.connect('http://192.168.43.150:8080/');
+
     //-------------------------- VARS -------------------------//
 
     var gX = 0,
@@ -40,6 +42,8 @@
     var updateTimeoutHandle;
 
     var firstrun = true;
+
+    var inDrawingMode = false;
 
     //------------------------- LOGICZ ------------------------//
     
@@ -211,6 +215,91 @@
                 console.log("using color " + colors[selectedColor])
             })
         }
+    }
+
+    function enterMainView() {
+        $(".mainContainer").css({display:"block"});
+        $(".drawContainer").css({display:"none"});
+
+        socket.emit("requestImages");
+
+        inDrawingMode = false;
+    }
+
+    socket.on("getImages", function (image_object) {
+        console.log(image_object);
+        renderMainScreen(image_object);
+    })
+
+    function renderMainScreen(image_object) {
+        if ($(".wips").is(":empty") == false) {
+            $(".wips").empty();
+        }
+
+        $(".wips").append("<tr>\
+            <th>Name</th>\
+            <th>Colors</th>\
+            <th>View</th>\
+        </tr>");
+
+        for (var i = image_object.inProgress.length - 1; i >= 0; i--) {
+            console.log(image_object.inProgress[i]);
+
+            var row = $("<tr></tr>");
+
+            var name = $("<td>"+image_object.inProgress[i].friendlyName+"</td>");
+            row.append(name);
+
+            var coloredDots = $("<td></td>")
+            for (var j = 0; j < image_object.inProgress[i].colors.length; j++) {
+                var color = image_object.inProgress[i].colors[j];
+                var colordot = $('<div class="color-dot" \
+                                    style="background-color:' + color + ';\
+                                "></div>');
+                coloredDots.append(colordot);
+            };
+
+            coloredDots.data("_id", image_object.inProgress[i]._id);
+
+            coloredDots.hover(
+                function() {
+                    $( this ).css({"background-color":"lightgrey"});
+                }, function() {
+                    $( this ).css({"background-color":"white"});
+                }
+            );
+
+            coloredDots.click(function() {
+                socket.emit("requestPicture", $(this).data("_id"));
+            })
+
+            row.append(coloredDots);
+
+
+
+
+
+
+
+            var view = $('<td>&nbsp;&nbsp;&nbsp;</td>');
+            view.data("_id", image_object.inProgress[i]._id);
+
+            view.css({"background-color":"lightgrey"});
+            view.hover(
+                function() {
+                    $( this ).css({"background-color":"lightblue"});
+                }, function() {
+                    $( this ).css({"background-color":"lightgrey"});
+                }
+            );
+
+            view.click(function () {
+                window.location.href = "/image.html?id=" + $(this).data("_id");
+            });
+            row.append(view);
+
+            $(".wips").append(row);
+        };
     }
 
     //--------------------- EVENT HANDLERS --------------------//
@@ -390,21 +479,21 @@
     }
 
     $( window ).resize(function() {
-        SIZE = $(".container").width() / DIMS;
+        if (inDrawingMode) {
+            SIZE = $(".container").width() / DIMS;
 
-        GW = DIMS*SIZE;
-        GH = DIMS*SIZE;
+            GW = DIMS*SIZE;
+            GH = DIMS*SIZE;
 
-        // set correct dimensions
-        canvas.width = DIMS*SIZE;
-        canvas.height = DIMS*SIZE;
+            // set correct dimensions
+            canvas.width = DIMS*SIZE;
+            canvas.height = DIMS*SIZE;
 
-        renderPicture();
+            renderPicture();
+        }
     });
 
     //--------------- MUH WEBSAHKETS -------------------//
-
-    var socket = io.connect('http://192.168.43.150:8080/');
 
     function updatePicture() {
         // 10/10 error handling, would be trash programmer again
@@ -422,12 +511,18 @@
                 pixels:picture
             });
             console.log("updated");
-        }, 1000);
+        }, 500);
     }
 
     function sendFinishedPicture() {
         // 10/10 error handling, would be trash programmer again
         for (var i = 0; i < picture.length; i++) {
+            for (var j = 0; j < picture[i].length; j++) {
+                if (picture[i][j] == -1) {
+                    alert("Please fill in all blank spaces");
+                    return;
+                }
+            }
             picture[i] = picture[i].slice(0, DIMS);
         }
         picture = picture.slice(0,DIMS);
@@ -438,8 +533,7 @@
         });
         console.log("sent");
 
-        $(".mainContainer").css({display:"block"});
-        $(".drawContainer").css({display:"none"});
+        enterMainView()
     }
 
     function getImage (url) {
@@ -457,6 +551,11 @@
 
     socket.on('newPicture', function (picture_obj) {
         console.log('Picture: ', picture_obj);
+
+        if (picture_obj == null) {
+            alert("oops, looks like the picture has been finished!");
+            return;
+        }
 
         // Init canvas context
         canvas = document.getElementById('drawingboard');
@@ -495,6 +594,7 @@
         // show the board
         $(".not-drawing").css({display:"none"});
         $(".drawContainer").css({display:"block"});
+        inDrawingMode= true;
 
         firstrun = false;
     })
@@ -502,6 +602,29 @@
     $(".btn_start").click(function(){
         socket.emit('requestPicture');
     });
+
+    //-------------------------- MAIN -------------------------//
+
+    console.log("gethype");
+
+    if (!localStorage.returning) {
+        localStorage.returning = true;
+        $(".startContainer").css({display:"block"});
+    } else {
+        enterMainView();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
     //------------------------- MAGIC -------------------------//
 
@@ -524,15 +647,4 @@
         return {x:canvasX, y:canvasY}
     }
     HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
-
-    //-------------------------- MAIN -------------------------//
-
-    console.log("gethype");
-
-    if (!localStorage.returning) {
-        localStorage.returning = true;
-        $(".startContainer").css({display:"block"});
-    } else {
-        $(".mainContainer").css({display:"block"});
-    }
 // })();

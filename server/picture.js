@@ -37,6 +37,7 @@ const addImageData = (picture, imageObj) => {
   p.pixels = JSON.parse(pixels)
   p.x = x
   p.y = y
+  p.friendlyName = imageObj.friendlyName
   return p
 }
 
@@ -55,11 +56,24 @@ const overwrite = (picture, replacement) => {
 
 function getRandomImage() {
   return Image.findOne()
+    .sort('-createdAt')
     .exec()
 }
 
-export function createNewPicture() {
-  return getRandomImage().then(image => {
+export function createNewPicture(imageId) {
+  let imagePromise = null
+
+  if (imageId) {
+    imagePromise = Image.findById(imageId).exec().then(img => {
+      if (!img) throw new Error(`Image ${imageId} not found`)
+
+      return img
+    })
+  } else {
+    imagePromise = getRandomImage()
+  }
+
+  return imagePromise.then(image => {
     return Promise.all([
       Picture.find({
         image: image._id,
@@ -178,6 +192,18 @@ export function getFullImage(imageId) {
       image,
       pictures: pictures.map(picture => addImageData(picture, image)),
       size: PICTURE_SIZE
+    }
+  })
+}
+
+export function getImages() {
+  return Promise.all([
+    Promise.resolve([]),
+    Image.find().exec()
+  ]).then(([complete, inProgress]) => {
+    return {
+      complete,
+      inProgress
     }
   })
 }

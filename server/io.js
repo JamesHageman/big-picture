@@ -7,7 +7,8 @@ import {
   createNewPicture,
   savePicture,
   getPicture,
-  getFullImage
+  getFullImage,
+  getImages
 } from './picture'
 
 let io
@@ -33,8 +34,8 @@ function sendPictureUpdate(socket, picture) {
     }, errorHandler(socket))
 }
 
-function sendNewPicture(socket) {
-  createNewPicture().then(picture => {
+function sendNewPicture(socket, imageId) {
+  createNewPicture(imageId).then(picture => {
     socket.emit('newPicture', picture)
     // console.log('saving ', picture._id, socket.handshake.session)
     socket.handshake.session.currentPicture = picture._id
@@ -95,8 +96,8 @@ export default function start(server, sessionMiddleware, cookieMiddleware) {
       sendCurrentPicture(socket)
     }
 
-    socket.on('requestPicture', () => {
-      sendNewPicture(socket)
+    socket.on('requestPicture', (imageId) => {
+      sendNewPicture(socket, imageId)
     })
 
     socket.on('updatePicture', ({ _id, pixels }) => {
@@ -117,6 +118,16 @@ export default function start(server, sessionMiddleware, cookieMiddleware) {
       socket.join(imageRoom(imageId))
 
       sendImage(socket)
+    })
+
+    socket.on('requestImages', () => {
+      getImages().then(({
+        complete, inProgress
+      }) => {
+        socket.emit('getImages', {
+          complete, inProgress
+        })
+      })
     })
   })
 }
