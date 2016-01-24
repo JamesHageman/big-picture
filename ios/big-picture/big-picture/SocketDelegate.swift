@@ -21,9 +21,11 @@ class SocketDelegate: AnyObject {
             updateTimer = NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(5), target: self, selector: "updateProgress", userInfo: nil, repeats: true)
         }
     }
+    weak var mainMenuVC : MainMenuViewController!
     
-    init(url: String) {
+    init(url: String, menuVC: MainMenuViewController) {
         socket = SocketIOClient(socketURL: url)
+        mainMenuVC = menuVC
         setInitialHandlers()
         socket.connect()
     }
@@ -47,7 +49,27 @@ class SocketDelegate: AnyObject {
             }
         }
         
+        socket.on("getImages") { (data: [AnyObject], ack: SocketAckEmitter?) -> Void in
+            if let dict = data[0] as? NSDictionary {
+                let compl = dict.objectForKey("complete") as! NSArray
+                let inProg = dict.objectForKey("inProgress") as! NSArray
+                var completedPictures = [Picture]()
+                var worksInProgress = [Picture]()
+                for dataDict in compl {
+                    completedPictures.append(Picture(dict: dataDict as! NSDictionary))
+                }
+                for var i = 0; i < inProg.count; i++ {
+                    worksInProgress.append(Picture(dict: inProg[i] as! NSDictionary))
+                }
+                dispatch_async(dispatch_get_main_queue(),{
+                    self.mainMenuVC.receivePictures(worksInProgress, comp: completedPictures)
+                })
+            }
+        }
         
+        socket.on("connect") { (data: [AnyObject], ack: SocketAckEmitter?) -> Void in
+           self.requestImages()
+        }
         
         socket.onAny {print("Got event: \($0.event), with items: \($0.items)")}
     }
@@ -77,8 +99,12 @@ class SocketDelegate: AnyObject {
         socket.emit("requestPicture")
     }
     
-    func setSocketDrawingHandlers() {
-        
+    func askForImageWithId(id: String, callBack: (picture: Picture) -> Void) {
+        imgCallback = callBack
+        socket.emit("requestPicture", id)
     }
     
+    func requestImages() {
+        socket.emit("requestImages")
+    }
 }

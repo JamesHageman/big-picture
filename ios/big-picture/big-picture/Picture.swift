@@ -14,7 +14,9 @@ class Picture: AnyObject {
     var image : UIImage?
     var imageID : String
     var colors : [UIColor]
-    var size : Int
+    var size : Int = 0
+    var dimensions : CGSize?
+    var friendlyName : String?
     var imageLoadedCallback : ((img : UIImage) -> Void)? {
         didSet {
             if let img = self.image, cb = self.imageLoadedCallback {
@@ -26,9 +28,19 @@ class Picture: AnyObject {
     init(dict: NSDictionary) {
         imageID = dict.objectForKey("_id") as! String
         colors = [UIColor]()
-        size = dict.objectForKey("size") as! Int
+        if let sz = dict.objectForKey("size") as? Int {
+            size = sz
+        }
+        if let name = dict.objectForKey("friendlyName") as? String {
+            friendlyName = name
+        }
+        if let wid = dict.objectForKey("width") as? Int, hgt = dict.objectForKey("height") as? Int {
+            dimensions = CGSize(width: wid, height: hgt)
+        }
         let colorStrings = dict.objectForKey("colors") as! [String]
-        setImageFromURL("http:" + SocketDelegate.urlBase + (dict.objectForKey("imageURL") as! String))
+        if let url = dict.objectForKey("imageURL") as? String {
+            setImageFromURL("http:" + SocketDelegate.urlBase + url)
+        }
         for colorString in colorStrings {
             colors.append(colorWithHexString(colorString))
         }

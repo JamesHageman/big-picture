@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		2C08D7751C542F1F00439168 /* grid.png in Resources */ = {isa = PBXBuildFile; fileRef = 2C08D7741C542F1F00439168 /* grid.png */; };
 		2C08D7791C5448BE00439168 /* WorkInProgressTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C08D7781C5448BE00439168 /* WorkInProgressTableViewCell.swift */; };
+		2C5F2D6A1C54665F00E3109D /* PictureProgressViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C5F2D691C54665F00E3109D /* PictureProgressViewController.swift */; };
 		2CA7A1261C53F2EE000AE44F /* MainMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA7A1251C53F2EE000AE44F /* MainMenuViewController.swift */; };
 		2CA7A12C1C53F647000AE44F /* SocketDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA7A12B1C53F647000AE44F /* SocketDelegate.swift */; };
 		2CA7A12E1C53FA29000AE44F /* Picture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA7A12D1C53FA29000AE44F /* Picture.swift */; };
@@ -28,6 +29,7 @@
 /* Begin PBXFileReference section */
 		2C08D7741C542F1F00439168 /* grid.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = grid.png; sourceTree = "<group>"; };
 		2C08D7781C5448BE00439168 /* WorkInProgressTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkInProgressTableViewCell.swift; sourceTree = "<group>"; };
+		2C5F2D691C54665F00E3109D /* PictureProgressViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictureProgressViewController.swift; sourceTree = "<group>"; };
 		2CA7A1251C53F2EE000AE44F /* MainMenuViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainMenuViewController.swift; sourceTree = "<group>"; };
 		2CA7A12B1C53F647000AE44F /* SocketDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketDelegate.swift; sourceTree = "<group>"; };
 		2CA7A12D1C53FA29000AE44F /* Picture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Picture.swift; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 				2CA7A1251C53F2EE000AE44F /* MainMenuViewController.swift */,
 				2CC083E81C5314EB006A5831 /* Main.storyboard */,
 				2CC083ED1C5314EB006A5831 /* LaunchScreen.storyboard */,
+				2C5F2D691C54665F00E3109D /* PictureProgressViewController.swift */,
 			);
 			name = "Storyboard+VCs";
 			sourceTree = "<group>";
@@ -279,6 +282,7 @@
 				2CA7A1261C53F2EE000AE44F /* MainMenuViewController.swift in Sources */,
 				2CC083E71C5314EB006A5831 /* PictureDrawViewController.swift in Sources */,
 				2C08D7791C5448BE00439168 /* WorkInProgressTableViewCell.swift in Sources */,
+				2C5F2D6A1C54665F00E3109D /* PictureProgressViewController.swift in Sources */,
 				2CC083FD1C535077006A5831 /* ColorButton.swift in Sources */,
 				2CC083F71C531A21006A5831 /* PictureDrawView.swift in Sources */,
 				2CA7A12E1C53FA29000AE44F /* Picture.swift in Sources */,

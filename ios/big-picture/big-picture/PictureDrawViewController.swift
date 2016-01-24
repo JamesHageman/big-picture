@@ -12,8 +12,8 @@ import Socket_IO_Client_Swift
 class PictureDrawViewController: UIViewController {
 
     @IBOutlet var backDropImageView : UIImageView!
-    @IBOutlet var pictureDrawView : PictureDrawView! //always set the pictureSideLength property of pictureDrawView before
-                                                     //allowing the user to do anything
+    @IBOutlet var pictureDrawView : PictureDrawView!
+    @IBOutlet var titleLabel : UILabel!
     @IBOutlet var colorButtons : [ColorButton]!
     var availableColours : [UIColor]! = [UIColor](arrayLiteral: UIColor(red: 1, green: 0, blue: 0, alpha: 1), UIColor(red: 0.0, green: 0.0, blue: 1, alpha: 1), UIColor(red: 0, green: 1, blue: 0, alpha: 1), UIColor(red: 0, green: 1, blue: 0, alpha: 1), UIColor(red: 0, green: 1, blue: 0, alpha: 1), UIColor(red: 0, green: 1, blue: 0, alpha: 1), UIColor(red: 0, green: 1, blue: 0, alpha: 1))
     var backDropImage : UIImage? {
@@ -26,7 +26,7 @@ class PictureDrawViewController: UIViewController {
             }
         }
     }
-    var imageID : String!
+    var imageID : String!, imageFriendlyName : String!
     var picSize : Int!
     var socketDelegate : SocketDelegate!
     
@@ -49,6 +49,7 @@ class PictureDrawViewController: UIViewController {
         }
         pictureDrawView.initializeValues(availableColours)
         pictureDrawView.pictureSideLength = picSize
+        titleLabel.text = imageFriendlyName
         // Do any additional setup after loading the view, typically from a nib.
     }
     
@@ -65,7 +66,22 @@ class PictureDrawViewController: UIViewController {
     }
     
     @IBAction func submitImage() {
-        socketDelegate.submitImage()
+        if (pictureDrawView.pixelArrayHasEmptySpots()) {
+            let alertVC = UIAlertController(title: "Alert", message: "You can't submit a drawing with empty spots!", preferredStyle: UIAlertControllerStyle.Alert)
+            alertVC.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default, handler: { (action: UIAlertAction) -> Void in
+                alertVC.dismissViewControllerAnimated(true, completion: nil)
+            }))
+            self.presentViewController(alertVC, animated: true, completion: nil)
+        }
+        else {
+            socketDelegate.submitImage()
+            let alertVC = UIAlertController(title: "Alert", message: "Contribution Submitted", preferredStyle: UIAlertControllerStyle.Alert)
+            alertVC.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default, handler: { (action: UIAlertAction) -> Void in
+                alertVC.dismissViewControllerAnimated(true, completion: nil)
+                self.dismissViewControllerAnimated(true, completion: nil)
+            }))
+            self.presentViewController(alertVC, animated: true, completion: nil)
+        }
     }
     
     @IBAction func changeStrokeWidth(sender: UISlider) {
@@ -81,6 +97,7 @@ class PictureDrawViewController: UIViewController {
         picSize = pic.size
         socketDelegate = sDelegate
         sDelegate.pictureDrawVC = self
+        imageFriendlyName = pic.friendlyName
     }
 
     override func didReceiveMemoryWarning() {
@@ -93,7 +110,11 @@ class PictureDrawViewController: UIViewController {
     }
     
     @IBAction func unwindToMainMenu(segue: UIStoryboardSegue) {
-        
+        self.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    override func viewWillDisappear(animated: Bool) {
+        socketDelegate.updateTimer?.invalidate()
     }
 
 }

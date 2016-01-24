@@ -80,6 +80,20 @@ class PictureDrawView: UIView {
             self.setNeedsDisplay()
     }
     
+    func pixelArrayHasEmptySpots() -> Bool {
+        if let pArray = pictureStateStack.last {
+            for var i = 0; i < pictureSideLength; i++ {
+                for var j = 0; j < pictureSideLength; j++ {
+                    if (pArray[j][i] == clearColorIntValue) {
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+        return true
+    }
+    
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         appendNewStack()
         addTouchLocationToStacks(touches.first!.locationInView(self))
