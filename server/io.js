@@ -9,7 +9,8 @@ import {
   getPicture,
   getFullImage,
   getImages,
-  cancelPicture
+  cancelPicture,
+  flagPicture
 } from './picture'
 
 let io
@@ -143,6 +144,11 @@ export default function start(server, sessionMiddleware, cookieMiddleware) {
           },
             errorHandler(socket))
       }
+    })
+
+    socket.on('flagPicture', (pictureId) => {
+      flagPicture(pictureId)
+        .then(() => {}, errorHandler(socket))
     })
   })
 }

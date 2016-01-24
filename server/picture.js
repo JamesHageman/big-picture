@@ -212,3 +212,21 @@ export function cancelPicture(id) {
   console.log('Cancel picture ', id)
   return Picture.remove({ _id: id }).exec()
 }
+
+export function flagPicture(id) {
+  return Picture.findById(id)
+    .then(picture => {
+      if (!picture) throw new Error(`Picture ${id} not found`)
+
+      if (!picture.flag) {
+        picture.flag = 0
+      }
+
+      picture.flag++
+      if (picture.flag >= 5) {
+        picture.overwritten = true
+      }
+
+      return picture.save()
+    })
+}

@@ -14,6 +14,10 @@ const pictureSchema = new Schema({
   overwritten: {
     type: Boolean,
     default: false
+  },
+  flag: {
+    type: Number,
+    default: 0
   }
 })
 
