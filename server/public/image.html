@@ -31,7 +31,7 @@
     var ctx = canvas.getContext('2d')
 
 
-    var socket = io.connect('http://192.168.43.150:8080/');
+    var socket = io.connect('/');
     var id = getQueryVariable('id')
 
     if (!id) alert('no `id` supplied')
@@ -118,7 +118,7 @@
 
     canvas.onclick = function (e) {
       var cords = resolveClickedTile(canvas.relMouseCoords(e));
-      
+
       for (var i = 0; i < pictures.length; i++) {
         if (pictures[i].x === cords.c && pictures[i].y === cords.r) {
           socket.emit("flagPicture",pictures[i]._id);
