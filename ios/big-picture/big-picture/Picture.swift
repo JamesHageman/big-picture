@@ -16,6 +16,10 @@ class Picture: AnyObject {
     var colors : [UIColor]
     var size : Int = 0
     var dimensions : CGSize?
+    var rowsCols : CGSize?
+    var location : (x: Int, y: Int)?
+    var pictures : [Picture]?
+    var pixelArrays : [[Int]]?
     var friendlyName : String?
     var imageLoadedCallback : ((img : UIImage) -> Void)? {
         didSet {
@@ -31,8 +35,14 @@ class Picture: AnyObject {
         if let sz = dict.objectForKey("size") as? Int {
             size = sz
         }
+        if let rows = dict.objectForKey("rows") as? Int, cols = dict.objectForKey("columns") as? Int {
+            rowsCols = CGSize(width: cols, height: rows)
+        }
         if let name = dict.objectForKey("friendlyName") as? String {
             friendlyName = name
+        }
+        if let x = dict.objectForKey("x") as? Int, y = dict.objectForKey("y") as? Int {
+            location = (x, y)
         }
         if let wid = dict.objectForKey("width") as? Int, hgt = dict.objectForKey("height") as? Int {
             dimensions = CGSize(width: wid, height: hgt)

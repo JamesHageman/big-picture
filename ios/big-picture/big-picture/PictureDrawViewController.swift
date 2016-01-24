@@ -78,7 +78,7 @@ class PictureDrawViewController: UIViewController {
             let alertVC = UIAlertController(title: "Alert", message: "Contribution Submitted", preferredStyle: UIAlertControllerStyle.Alert)
             alertVC.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default, handler: { (action: UIAlertAction) -> Void in
                 alertVC.dismissViewControllerAnimated(true, completion: nil)
-                self.dismissViewControllerAnimated(true, completion: nil)
+                self.unwindToMainMenu()
             }))
             self.presentViewController(alertVC, animated: true, completion: nil)
         }
@@ -109,8 +109,8 @@ class PictureDrawViewController: UIViewController {
         return true
     }
     
-    @IBAction func unwindToMainMenu(segue: UIStoryboardSegue) {
-        self.dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func unwindToMainMenu() {
+        self.navigationController?.popViewControllerAnimated(true)
     }
     
     override func viewWillDisappear(animated: Bool) {

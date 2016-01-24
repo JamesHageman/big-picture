@@ -25,6 +25,7 @@ class WorkInProgressTableViewCell: UITableViewCell {
     }
     var colors : [CGColor]!
     var gestureTarget : MainMenuViewController!
+    var initialTouchXVal : CGFloat?, deltaX : CGFloat = 0
     @IBOutlet var titleLabel : UILabel!
     
     func setupCell(colorsP: [UIColor], gestureTargetP: MainMenuViewController, imageIDP: String, title: String) {
@@ -35,9 +36,9 @@ class WorkInProgressTableViewCell: UITableViewCell {
         gestureTarget = gestureTargetP
         imageID = imageIDP
         _progress = 0
-        let swipe = UISwipeGestureRecognizer(target: self, action: "viewWorkInProgress")
-        swipe.direction = UISwipeGestureRecognizerDirection.Left
-        self.addGestureRecognizer(swipe)
+     //   let swipe = UISwipeGestureRecognizer(target: self, action: "viewWorkInProgress")
+     //   swipe.direction = UISwipeGestureRecognizerDirection.Left
+     //   self.addGestureRecognizer(swipe)
         let tap = UITapGestureRecognizer(target: self, action: "contributeToWorkInProgress")
         self.addGestureRecognizer(tap)
         self.titleLabel.text = title
@@ -51,12 +52,36 @@ class WorkInProgressTableViewCell: UITableViewCell {
         gestureTarget.goToContributeToWorkInProgressWithImageID(imageID)
     }
     
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if let touch = touches.first {
+            initialTouchXVal = touch.locationInView(self).x
+        }
+    }
+    
+    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if let touch = touches.first {
+            deltaX = max(initialTouchXVal! - touch.locationInView(self).x, 0)
+            if (deltaX > 0) {
+                self.setNeedsDisplay()
+            }
+        }
+    }
+
+    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if (deltaX > 0) {
+            viewWorkInProgress()
+            deltaX = 0
+            NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(3), target: self, selector: "setNeedsDisplay", userInfo: nil, repeats: false)
+        }
+    }
+    
     
     override func drawRect(rect: CGRect) {
         let cont = UIGraphicsGetCurrentContext()
         CGContextAddRect(cont, self.bounds)
         CGContextSetFillColorWithColor(cont, colors[0])
         CGContextFillPath(cont)
+        CGContextTranslateCTM(cont, deltaX * -1, 0)
         for var i = 1; i < colors.count; i++ {
             let stripeWidth = self.bounds.width / CGFloat(colors.count)
             CGContextMoveToPoint(cont, stripeWidth * CGFloat(i-1), self.bounds.height)

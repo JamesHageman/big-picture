@@ -13,27 +13,62 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     var socketDelegate : SocketDelegate!
     var worksInProgress : [Picture]?
     var completedImages : [Picture]?
+    var backgroundSelectedButtonColor : UIColor!, backgroundDeselectedButtonColor : UIColor!
     @IBOutlet var picturesTableView : UITableView!
+    @IBOutlet var titleLabel : UILabel!
+    @IBOutlet var worksInProgressButton : UIButton!
+    @IBOutlet var completedWorksButton : UIButton!
+    @IBOutlet var galleryCollectionView : UICollectionView!
     
     override func viewDidLoad() {
         socketDelegate = SocketDelegate(url: SocketDelegate.urlBase, menuVC: self)
+        backgroundSelectedButtonColor = worksInProgressButton.backgroundColor
+        backgroundDeselectedButtonColor = completedWorksButton.backgroundColor
     }
     
     @IBAction func beginPictureDrawing() {
         socketDelegate.askForImage { (picture) -> Void in
-            self.performSegueWithIdentifier("showPictureVCSegue", sender: picture)
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let picVC = storyboard.instantiateViewControllerWithIdentifier("PictureDraw") as! PictureDrawViewController
+            picVC.setPicture(picture, sDelegate: self.socketDelegate)
+            self.navigationController?.pushViewController(picVC, animated: true)
         }
     }
     
     func goToViewWorkInProgressWithImageID(imageID: String) {
         socketDelegate.askForImageWithId(imageID) { (picture) -> Void in
-            self.performSegueWithIdentifier("showPictureProgressSegue", sender: picture)
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let imgVC = storyboard.instantiateViewControllerWithIdentifier("ImageProgress") as! ImageProgressViewController
+            imgVC.setupImageProgressView(picture, sDelegate: self.socketDelegate)
+            self.navigationController?.pushViewController(imgVC, animated: true)
         }
     }
     
     func goToContributeToWorkInProgressWithImageID(imageID: String) {
-        socketDelegate.askForImageWithId(imageID) { (picture) -> Void in
-            self.performSegueWithIdentifier("showPictureVCSegue", sender: picture)
+        socketDelegate.askForPictureWithId(imageID) { (picture) -> Void in
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let picVC = storyboard.instantiateViewControllerWithIdentifier("PictureDraw") as! PictureDrawViewController
+            picVC.setPicture(picture, sDelegate: self.socketDelegate)
+            self.navigationController?.pushViewController(picVC, animated: true)
+        }
+    }
+    
+    @IBAction func changeDisplayedImages(sender: UIButton) {
+        if (sender == worksInProgressButton) {
+            //display WIP
+            worksInProgressButton.backgroundColor = backgroundSelectedButtonColor
+            completedWorksButton.backgroundColor = backgroundDeselectedButtonColor
+            galleryCollectionView.hidden = true
+            picturesTableView.hidden = false
+            titleLabel.text = "Works in Progress"
+        }
+        else if (sender == completedWorksButton) {
+            //display completed works
+            worksInProgressButton.backgroundColor = backgroundDeselectedButtonColor
+            completedWorksButton.backgroundColor = backgroundSelectedButtonColor
+            galleryCollectionView.hidden = false
+            picturesTableView.hidden = true
+            titleLabel.text = "Gallery"
         }
     }
     
@@ -52,7 +87,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return 60
+        return 80
     }
 
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -65,8 +100,15 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if let picture = sender as? Picture, vc = segue.destinationViewController as? PictureDrawViewController {
-            vc.setPicture(picture, sDelegate: self.socketDelegate)
+        if (segue.identifier == "showPictureVCSegue") {
+            if let picture = sender as? Picture, vc = segue.destinationViewController as? PictureDrawViewController {
+                vc.setPicture(picture, sDelegate: self.socketDelegate)
+            }
+        }
+        else if (segue.identifier == "showPictureProgressSegue") {
+            if let picture = sender as? Picture, vc = segue.destinationViewController as? ImageProgressViewController {
+                vc.setupImageProgressView(picture, sDelegate: self.socketDelegate)
+            }
         }
     }
 }
