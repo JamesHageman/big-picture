@@ -121,11 +121,11 @@
 
       for (var i = 0; i < pictures.length; i++) {
         if (pictures[i].x === cords.c && pictures[i].y === cords.r) {
-          if (!localStorage.["flagged_"cords.c + "_" + cords.r]) {
+          if (!localStorage["flagged_"cords.c + "_" + cords.r]) {
             socket.emit("flagPicture",pictures[i]._id);
             console.log("flagged tile at " + cords.c + ", " + cords.r);
 
-            localStorage.["flagged_"cords.c + "_" + cords.r] = true;
+            localStorage["flagged_"cords.c + "_" + cords.r] = true;
           }
           return;
         }
