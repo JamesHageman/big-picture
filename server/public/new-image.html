@@ -128,7 +128,7 @@
           }).then(function (res) {
             console.log(res);
           }, function (reason) {
-            console.log(err, reason);
+            window.location.href = '/';
           });
         } else {
           console.log($scope.newImageForm)
