@@ -341,43 +341,70 @@
         renderPicture();
     }
 
-    function addDrawEventHandlers () {
-        $('#drawingboard').mousedown(function (e) {
-            isDown = true;
+    function onDown(e) {
+        isDown = true;
 
-            // Move Mode
-            if (selected_tool == "move") {
-                pX = e.pageX;
-                pY = e.pageY;
-            }
+        // Move Mode
+        if (selected_tool == "move") {
+            pX = e.pageX;
+            pY = e.pageY;
+        }
 
-            // Freehand Mode
-            if (selected_tool == "freehand") {
-                // save canvas state at start of fill
-                savePicture();
+        // Freehand Mode
+        if (selected_tool == "freehand") {
+            // save canvas state at start of fill
+            savePicture();
 
-                var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
+            var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
 
-                if (stroke_size == 1) {
-                    if (picture[tile.r][tile.c] != selectedColor) {
-                        picture[tile.r][tile.c] = selectedColor;
-                        renderPicture();
-                    }
-                } else splotchCircle(tile, stroke_size)
-            }
-
-            // Fill Mode
-            if (selected_tool == "fill") {
-                // save canvas state at start of fill
-                savePicture();
-
-                var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
-
+            if (stroke_size == 1) {
                 if (picture[tile.r][tile.c] != selectedColor) {
-                    fill(picture, tile.r, tile.c, selectedColor);
+                    picture[tile.r][tile.c] = selectedColor;
                     renderPicture();
                 }
+            } else splotchCircle(tile, stroke_size)
+        }
+
+        // Fill Mode
+        if (selected_tool == "fill") {
+            // save canvas state at start of fill
+            savePicture();
+
+            var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
+
+            if (picture[tile.r][tile.c] != selectedColor) {
+                fill(picture, tile.r, tile.c, selectedColor);
+                renderPicture();
             }
+        }
+    }
+    function onMove(e) {
+        // Move Mode
+        if (selected_tool == "move") {
+            if (isDown) panPicture(e);
+        }
+
+        // Draw Mode
+        if (selected_tool == "freehand" && isDown) {
+            var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
+
+            if (stroke_size == 1) {
+                if (picture[tile.r][tile.c] != selectedColor) {
+                    picture[tile.r][tile.c] = selectedColor;
+                    renderPicture();
+                }
+            } else splotchCircle(tile, stroke_size)
+        }
+    }
+
+    function addDrawEventHandlers () {
+        $('#drawingboard').mousedown(function (e) {
+            onDown(e);
+        }).on("touchstart",function (e) {
+            e.preventDefault();
+            e = e.originalEvent.touches[0];
+
+            onDown(e);
         }).mouseup(function (e) {
             isDown = false;
             updatePicture();
@@ -391,22 +418,12 @@
             mouseLeft = false;
 
         }).mousemove(function (e) {
-            // Move Mode
-            if (selected_tool == "move") {
-                if (isDown) panPicture(e);
-            }
+            onMove(e);
+        }).on("touchmove", function (e) {
+            e.preventDefault();
+            e = e.originalEvent.touches[0];
 
-            // Draw Mode
-            if (selected_tool == "freehand" && isDown) {
-                var tile = resolveClickedPictureElement(canvas.relMouseCoords(e));
-
-                if (stroke_size == 1) {
-                    if (picture[tile.r][tile.c] != selectedColor) {
-                        picture[tile.r][tile.c] = selectedColor;
-                        renderPicture();
-                    }
-                } else splotchCircle(tile, stroke_size)
-            }
+            onMove(e);
         });
 
         $(document).mouseup(function (e) {
@@ -673,80 +690,4 @@
         return {x:canvasX, y:canvasY}
     }
     HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
-
-
-
-
-
-    
-    (function() {
-        
-        /* == GLOBAL DECLERATIONS == */
-        TouchMouseEvent = {
-            DOWN: "touchmousedown",
-            UP: "touchmouseup",
-            MOVE: "touchmousemove"
-        }
-       
-        /* == EVENT LISTENERS == */
-        var onMouseEvent = function(event) {
-            var type;
-            
-            switch (event.type) {
-                case "mousedown": type = TouchMouseEvent.DOWN; break;
-                case "mouseup":   type = TouchMouseEvent.UP;   break;
-                case "mousemove": type = TouchMouseEvent.MOVE; break;
-                default: 
-                    return;
-            }
-            
-            var touchMouseEvent = normalizeEvent(type, event, event.pageX, event.pageY);      
-            $(event.target).trigger(touchMouseEvent); 
-        }
-        
-        var onTouchEvent = function(event) {
-            var type;
-            
-            switch (event.type) {
-                case "touchstart": type = TouchMouseEvent.DOWN; break;
-                case "touchend":   type = TouchMouseEvent.UP;   break;
-                case "touchmove":  type = TouchMouseEvent.MOVE; break;
-                default: 
-                    return;
-            }
-            
-            var touch = event.originalEvent.touches[0];
-            var touchMouseEvent;
-            
-            if (type == TouchMouseEvent.UP) 
-                touchMouseEvent = normalizeEvent(type, event, null, null);
-            else 
-                touchMouseEvent = normalizeEvent(type, event, touch.pageX, touch.pageY);
-            
-            $(event.target).trigger(touchMouseEvent); 
-        }
-        
-        /* == NORMALIZE == */
-        var normalizeEvent = function(type, original, x, y) {
-            return $.Event(type, {
-                pageX: x,
-                pageY: y,
-                originalEvent: original
-            });
-        }
-        
-        /* == LISTEN TO ORIGINAL EVENT == */
-        var jQueryDocument = $(document);
-       
-        if ("ontouchstart" in window) {
-            jQueryDocument.on("touchstart", onTouchEvent);
-            jQueryDocument.on("touchmove", onTouchEvent);
-            jQueryDocument.on("touchend", onTouchEvent); 
-        } else {
-            jQueryDocument.on("mousedown", onMouseEvent);
-            jQueryDocument.on("mouseup", onMouseEvent);
-            jQueryDocument.on("mousemove", onMouseEvent);
-        }
-        
-    })();
 // })();
