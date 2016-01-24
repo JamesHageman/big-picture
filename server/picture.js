@@ -59,8 +59,20 @@ function getRandomImage() {
     .exec()
 }
 
-export function createNewPicture() {
-  return getRandomImage().then(image => {
+export function createNewPicture(imageId) {
+  let imagePromise = null
+
+  if (imageId) {
+    imagePromise = Image.findById(imageId).exec().then(img => {
+      if (!img) throw new Error(`Image ${imageId} not found`)
+
+      return img
+    })
+  } else {
+    imagePromise = getRandomImage()
+  }
+
+  return imagePromise.then(image => {
     return Promise.all([
       Picture.find({
         image: image._id,
@@ -179,6 +191,18 @@ export function getFullImage(imageId) {
       image,
       pictures: pictures.map(picture => addImageData(picture, image)),
       size: PICTURE_SIZE
+    }
+  })
+}
+
+export function getImages() {
+  return Promise.all([
+    [],
+    Image.find().exec()
+  ]).then(([complete, inProgress]) => {
+    return {
+      complete,
+      inProgress
     }
   })
 }

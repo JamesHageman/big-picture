@@ -116,7 +116,9 @@
               columns: ~~$scope.columns,
               width: $scope.imageDimensions.width,
               height: $scope.imageDimensions.height,
-              colors: $scope.colors
+              colors: $scope.colors.map(function (color) {
+                return '#' + color.slice(0, 6);
+              })
             },
             method: 'POST'
           }).then(function (res) {
