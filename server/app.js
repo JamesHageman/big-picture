@@ -125,7 +125,8 @@ function addImage({
   columns,
   fileName,
   width,
-  height
+  height,
+  colors
 }) {
   const size = Math.floor(width / columns)
 
@@ -135,6 +136,7 @@ function addImage({
     width: width,
     height: height,
     columns: columns,
+    colors: colors,
     rows: Math.floor(height / size)
   })
 
@@ -147,7 +149,8 @@ app.post('/uploadImage', multipart(), (req, res) => {
     name,
     columns,
     width,
-    height
+    height,
+    colors
   } = req.body
 
   console.log(req.body)
@@ -166,7 +169,8 @@ app.post('/uploadImage', multipart(), (req, res) => {
         columns,
         width,
         height,
-        fileName
+        fileName,
+        colors
       }).then(image => res.json(image), err => {
         throw err
       })

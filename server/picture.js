@@ -197,7 +197,7 @@ export function getFullImage(imageId) {
 
 export function getImages() {
   return Promise.all([
-    [],
+    Promise.resolve([]),
     Image.find().exec()
   ]).then(([complete, inProgress]) => {
     return {

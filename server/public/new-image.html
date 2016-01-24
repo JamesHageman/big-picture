@@ -54,7 +54,7 @@
           Colors:
           <ol>
             <li ng-repeat="color in colors track by $index">
-              <input type="text" ng-model="color" maxlength="6" ng-pattern="'[a-fA-F\d]+'"/>
+              <input type="text" ng-model="colors[$index]" maxlength="6"/>
             </li>
           </ol>
         </div>
@@ -74,6 +74,8 @@
     app.controller('NewImageCtrl', function ($scope, Upload) {
       $scope.columns = 8;
       $scope.colors = [
+        '000000',
+        '000000',
         '000000',
         '000000',
         '000000',
@@ -117,15 +119,17 @@
               width: $scope.imageDimensions.width,
               height: $scope.imageDimensions.height,
               colors: $scope.colors.map(function (color) {
-                return '#' + color.slice(0, 6);
+                return '#' + color.slice(0, 6).toUpperCase();
               })
             },
             method: 'POST'
           }).then(function (res) {
-            // good
+            console.log(res);
           }, function (reason) {
-            // error
+            console.log(err, reason);
           });
+        } else {
+          console.log($scope.newImageForm)
         }
       }
     });

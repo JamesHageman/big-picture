@@ -6,15 +6,15 @@ export default function crop({
   y,
   size
 }, cb) {
-  const canvas = new Canvas(size, size);
-  const ctx = canvas.getContext('2d');
-  const img = new Image;
+  const canvas = new Canvas(size, size)
+  const ctx = canvas.getContext('2d')
+  const img = new Image()
 
-  img.src = buf;
+  img.src = buf
 
-  ctx.drawImage(img, -x, -y, img.width, img.width);
+  ctx.drawImage(img, -x, -y, img.width, img.height)
 
   canvas.toBuffer((err, newBuf) => {
-    cb(err, newBuf);
+    cb(err, newBuf)
   })
 }
