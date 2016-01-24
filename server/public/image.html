@@ -126,7 +126,7 @@
             socket.emit("flagPicture",pictures[i]._id);
             console.log("flagged tile at " + cords.c + ", " + cords.r);
 
-            localStorage.flagged[cords.r][cords.c] = true;
+            localStorage.flagged[cords.c][cords.r] = true;
           }
           return;
         }
