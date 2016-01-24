@@ -113,6 +113,25 @@ class PictureDrawView: UIView {
         setNeedsDisplay()
     }
     
+    func fillEmptyPixels() {
+        for var i = 0; i < pictureSideLength; i++ {
+            for var j = 0; j < pictureSideLength; j++ {
+                if (pictureStateStack[pictureStateStack.count - 1][j][i] == clearColorIntValue) {
+                    if (j == 0) {
+                        pictureStateStack[pictureStateStack.count - 1][j][i] = pictureStateStack[pictureStateStack.count - 1][j+1][i]
+                    }
+                    else if (j == pictureSideLength-1) {
+                        pictureStateStack[pictureStateStack.count - 1][j][i] = pictureStateStack[pictureStateStack.count - 1][j-1][i]
+                    }
+                    else {
+                        pictureStateStack[pictureStateStack.count - 1][j][i] =
+                            max(pictureStateStack[pictureStateStack.count - 1][j+1][i], pictureStateStack[pictureStateStack.count - 1][j-1][i])
+                    }
+                }
+            }
+        }
+    }
+    
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         appendNewStack()
         if (strokeWidth == -1) {

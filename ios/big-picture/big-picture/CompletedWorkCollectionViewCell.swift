@@ -24,7 +24,7 @@ class CompletedWorkCollectionViewCell: UICollectionViewCell {
         else {
             strokeColor = UIColor.blackColor()
         }*/
-        fillColor = UIColor(red: 222.0/255.0, green: 243.0/255.0, blue: 250.0/255.0, alpha: 0.8)
+        fillColor = UIColor(red: 34/255.0, green: 135/255.0, blue: 84/255.0, alpha: 0.6)
         strokeColor = UIColor.blackColor()
         if let img = pic.image {
             thumbnailView.image = img
@@ -39,13 +39,13 @@ class CompletedWorkCollectionViewCell: UICollectionViewCell {
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        fillColor = UIColor(red: 193/255.0, green: 213/255.0, blue: 219/255.0, alpha: 0.8)
+        fillColor = UIColor(red: 18/255.0, green: 72/255.0, blue: 45/255.0, alpha: 0.8)
         setNeedsDisplay()
         nextResponder()?.touchesBegan(touches, withEvent: event)
     }
     
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        fillColor = UIColor(red: 222.0/255.0, green: 243.0/255.0, blue: 250.0/255.0, alpha: 0.8)
+        fillColor = UIColor(red: 34/255.0, green: 135/255.0, blue: 84/255.0, alpha: 0.6)
         setNeedsDisplay()
         nextResponder()?.touchesEnded(touches, withEvent: event)
     }
@@ -64,7 +64,7 @@ class CompletedWorkCollectionViewCell: UICollectionViewCell {
         strokeColor.setStroke()
         fillColor.setFill()
         bPath.fill()
-        bPath.stroke()
+      //  bPath.stroke()
     }
     
 }

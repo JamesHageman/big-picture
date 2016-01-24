@@ -39,11 +39,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         
         let layoutGuide = galleryCollectionView.collectionViewLayout as! UICollectionViewFlowLayout
         let spacing = CGFloat(10)
-        layoutGuide.itemSize = CGSizeMake((self.view.frame.width - (30 + 30 + 15)) / 2, (self.view.frame.width - (30 + 30 + 15)) / 2 * 1.2)
-        /*layoutGuide.minimumInteritemSpacing = spacing / 2
-        layoutGuide.minimumLineSpacing = spacing / 2
-        layoutGuide.sectionInset = UIEdgeInsets(top: spacing, left: spacing, bottom: spacing, right: spacing)
-        galleryCollectionView.collectionViewLayout = layoutGuide*/
+        layoutGuide.itemSize = CGSizeMake((self.view.frame.width - (20 + 20 + 10)) / 2, (self.view.frame.width - (20 + 20 + 10)) / 2 * 1.1)
     }
     
     @IBAction func beginPictureDrawing() {
@@ -73,8 +69,8 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
-    @IBAction func changeDisplayedImages(sender: UIButton) {
-        if (sender == worksInProgressButton) {
+    func changeDisplay(shouldShowWorkInProgress: Bool) {
+        if (shouldShowWorkInProgress) {
             //display WIP
             worksInProgressButton.backgroundColor = backgroundSelectedButtonColor
             completedWorksButton.backgroundColor = backgroundDeselectedButtonColor
@@ -89,7 +85,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 emptyAlertLabel.hidden = true
             }
         }
-        else if (sender == completedWorksButton) {
+        else {
             //display completed works
             worksInProgressButton.backgroundColor = backgroundDeselectedButtonColor
             completedWorksButton.backgroundColor = backgroundSelectedButtonColor
@@ -104,6 +100,14 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
                 emptyAlertLabel.hidden = true
             }
         }
+    }
+    
+    @IBAction func changeDisplayedImagesFromSwipe(swipe: UISwipeGestureRecognizer) {
+        changeDisplay(swipe.direction == UISwipeGestureRecognizerDirection.Left)
+    }
+    
+    @IBAction func changeDisplayedImages(sender: UIButton) {
+        changeDisplay(sender == worksInProgressButton)
     }
     
     func receivePictures(wip: [Picture], comp: [Picture]) {

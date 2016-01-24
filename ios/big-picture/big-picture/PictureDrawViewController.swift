@@ -80,8 +80,14 @@ class PictureDrawViewController: UIViewController {
     @IBAction func submitImage() {
         if (pictureDrawView.pixelArrayHasEmptySpots()) {
             let alertVC = UIAlertController(title: "Alert", message: "You can't submit a drawing with empty spots!", preferredStyle: UIAlertControllerStyle.Alert)
-            alertVC.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Default, handler: { (action: UIAlertAction) -> Void in
+            alertVC.addAction(UIAlertAction(title: "Keep Drawing", style: UIAlertActionStyle.Default, handler: { (action: UIAlertAction) -> Void in
                 alertVC.dismissViewControllerAnimated(true, completion: nil)
+            }))
+            alertVC.addAction(UIAlertAction(title: "Fill Pixels and Submit", style: UIAlertActionStyle.Default, handler: { (action: UIAlertAction) -> Void in
+                alertVC.dismissViewControllerAnimated(true, completion: nil)
+                self.pictureDrawView.fillEmptyPixels()
+                self.socketDelegate.submitImage()
+                self.unwindToMainMenu() 
             }))
             self.presentViewController(alertVC, animated: true, completion: nil)
         }

@@ -18,7 +18,7 @@ class SocketDelegate: AnyObject {
     var updateTimer : NSTimer?
     weak var pictureDrawVC : PictureDrawViewController! {
         didSet {
-            updateTimer = NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(5), target: self, selector: "updateProgress", userInfo: nil, repeats: true)
+            updateTimer = NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(2), target: self, selector: "updateProgress", userInfo: nil, repeats: true)
         }
     }
     weak var mainMenuVC : MainMenuViewController!
@@ -29,6 +29,7 @@ class SocketDelegate: AnyObject {
         mainMenuVC = menuVC
         setInitialHandlers()
         socket.connect()
+        (UIApplication.sharedApplication().delegate! as! AppDelegate).socketDelegate = self
     }
     
     func setInitialHandlers() {
@@ -117,6 +118,10 @@ class SocketDelegate: AnyObject {
                 socket.emit("savePicture", dict)
             }
         }
+    }
+    
+    func connectSocket() {
+        socket.connect()
     }
     
     func askForImage(callBack: (picture: Picture) -> Void) {
