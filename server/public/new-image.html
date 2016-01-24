@@ -57,6 +57,7 @@
             <li ng-repeat="color in colors track by $index">
               <button type="button" ng-click="colors.splice($index, 1)">-</button>
               <input type="text" ng-model="colors[$index]" maxlength="6"/>
+              <div style="display: inline-block; width: 17px; height: 17px; border-radius: 50%; background-color: #{{color}}; border: 1px solid #000; margin-top: 5px;"></div>
             </li>
             <li ng-show="colors.length < 10"><button type="button" ng-click="colors.push('000000')">+</button></li>
           </ol>
