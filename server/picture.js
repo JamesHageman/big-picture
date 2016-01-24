@@ -37,6 +37,7 @@ const addImageData = (picture, imageObj) => {
   p.pixels = JSON.parse(pixels)
   p.x = x
   p.y = y
+  p.friendlyName = imageObj.friendlyName
   return p
 }
 
