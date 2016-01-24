@@ -1,3 +1,4 @@
 node_modules
 server/.db
 server/img
+server/db_copy
