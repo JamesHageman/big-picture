@@ -26,6 +26,7 @@ class WorkInProgressTableViewCell: UITableViewCell {
     var colors : [CGColor]!
     var gestureTarget : MainMenuViewController!
     var initialTouchXVal : CGFloat?, deltaX : CGFloat = 0
+    var touchHasMoved : Bool = false
     @IBOutlet var titleLabel : UILabel!
     
     func setupCell(colorsP: [UIColor], gestureTargetP: MainMenuViewController, imageIDP: String, title: String) {
@@ -39,8 +40,8 @@ class WorkInProgressTableViewCell: UITableViewCell {
      //   let swipe = UISwipeGestureRecognizer(target: self, action: "viewWorkInProgress")
      //   swipe.direction = UISwipeGestureRecognizerDirection.Left
      //   self.addGestureRecognizer(swipe)
-        let tap = UITapGestureRecognizer(target: self, action: "contributeToWorkInProgress")
-        self.addGestureRecognizer(tap)
+     //   let tap = UITapGestureRecognizer(target: self, action: "contributeToWorkInProgress")
+     //   self.addGestureRecognizer(tap)
         self.titleLabel.text = title
     }
     
@@ -64,19 +65,36 @@ class WorkInProgressTableViewCell: UITableViewCell {
             if (deltaX > 0) {
                 self.setNeedsDisplay()
             }
+            touchHasMoved = true
         }
     }
 
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        if (deltaX > 0) {
+        if (deltaX / self.frame.width > 0.3) {
             viewWorkInProgress()
+        }
+        else if (!touchHasMoved) {
+            contributeToWorkInProgress()
+        }
+        deltaX = 0
+        touchHasMoved = false
+        NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(0.6), target: self, selector: "animateStripes:", userInfo: nil, repeats: true)
+    }
+    
+    func animateStripes(timer: NSTimer) {
+        deltaX -= 2
+        if (deltaX <= 0) {
             deltaX = 0
-            NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(3), target: self, selector: "setNeedsDisplay", userInfo: nil, repeats: false)
+            timer.invalidate()
+        }
+        dispatch_async(dispatch_get_main_queue()) { () -> Void in
+            self.setNeedsDisplay()
         }
     }
     
     
     override func drawRect(rect: CGRect) {
+        print(deltaX)
         let cont = UIGraphicsGetCurrentContext()
         CGContextAddRect(cont, self.bounds)
         CGContextSetFillColorWithColor(cont, colors[0])

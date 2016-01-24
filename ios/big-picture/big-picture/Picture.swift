@@ -51,6 +51,9 @@ class Picture: AnyObject {
         if let url = dict.objectForKey("imageURL") as? String {
             setImageFromURL("http:" + SocketDelegate.urlBase + url)
         }
+        else if let url = dict.objectForKey("fileName") as? String {
+            setImageFromURL("http:" + SocketDelegate.urlBase + "/" + url)
+        }
         for colorString in colorStrings {
             colors.append(colorWithHexString(colorString))
         }

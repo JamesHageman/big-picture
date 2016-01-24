@@ -8,12 +8,21 @@
 
 import UIKit
 
-class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class MainMenuViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate {
     
     var socketDelegate : SocketDelegate!
     var worksInProgress : [Picture]?
     var completedImages : [Picture]?
+    var shouldScrollTableView : Bool! {
+        didSet {
+            if let tView = picturesTableView {
+                tView.scrollEnabled = shouldScrollTableView
+            }
+        }
+    }
     var backgroundSelectedButtonColor : UIColor!, backgroundDeselectedButtonColor : UIColor!
+    var selectedCell : WorkInProgressTableViewCell?
+    var lastTouchY : CGFloat?
     @IBOutlet var picturesTableView : UITableView!
     @IBOutlet var titleLabel : UILabel!
     @IBOutlet var worksInProgressButton : UIButton!
@@ -24,6 +33,16 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         socketDelegate = SocketDelegate(url: SocketDelegate.urlBase, menuVC: self)
         backgroundSelectedButtonColor = worksInProgressButton.backgroundColor
         backgroundDeselectedButtonColor = completedWorksButton.backgroundColor
+        shouldScrollTableView = true
+        picturesTableView.canCancelContentTouches = false
+        
+        let layoutGuide = UICollectionViewFlowLayout()
+        let spacing = CGFloat(10)
+        layoutGuide.itemSize = CGSizeMake((self.view.frame.width - (spacing * 3)) / 2, (self.view.frame.width - (spacing * 3)) / 2 * 1.2)
+        layoutGuide.minimumInteritemSpacing = spacing / 2
+        layoutGuide.minimumLineSpacing = spacing / 2
+        layoutGuide.sectionInset = UIEdgeInsets(top: spacing, left: spacing, bottom: spacing, right: spacing)
+        galleryCollectionView.collectionViewLayout = layoutGuide
     }
     
     @IBAction func beginPictureDrawing() {
@@ -76,6 +95,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         worksInProgress = wip
         completedImages = comp
         picturesTableView.reloadData()
+        galleryCollectionView.reloadData()
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -87,7 +107,7 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return 80
+        return 140
     }
 
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -97,18 +117,78 @@ class MainMenuViewController: UIViewController, UITableViewDelegate, UITableView
         else {
             return 0
         }
+        
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if (segue.identifier == "showPictureVCSegue") {
-            if let picture = sender as? Picture, vc = segue.destinationViewController as? PictureDrawViewController {
-                vc.setPicture(picture, sDelegate: self.socketDelegate)
-            }
-        }
-        else if (segue.identifier == "showPictureProgressSegue") {
-            if let picture = sender as? Picture, vc = segue.destinationViewController as? ImageProgressViewController {
-                vc.setupImageProgressView(picture, sDelegate: self.socketDelegate)
+    func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return false
+    }
+    
+  /*  override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if let touch = touches.first {
+            if let indexPath = picturesTableView.indexPathForRowAtPoint(touch.locationInView(picturesTableView)),
+                    cell = (picturesTableView.cellForRowAtIndexPath(indexPath) as? WorkInProgressTableViewCell) {
+                selectedCell = cell
+                selectedCell!.initialTouchXVal = touch.locationInView(selectedCell).x
+                lastTouchY = touch.locationInView(self.view).y
             }
         }
     }
+    
+    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if let touch = touches.first, cell = selectedCell, touchY = lastTouchY {
+            cell.deltaX = max(cell.initialTouchXVal! - touch.locationInView(cell).x, 0)
+            if (abs(touchY - touch.locationInView(self.view).y) < 3) {
+                picturesTableView.scrollEnabled = false
+            }
+            if (cell.deltaX > 0) {
+                cell.setNeedsDisplay()
+            }
+        }
+    }
+    
+    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if let cell = selectedCell {
+            if (cell.deltaX > 20) {
+                cell.viewWorkInProgress()
+                cell.deltaX = 0
+                NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(0.2), target: cell, selector: "animateStripes:", userInfo: nil, repeats: false)
+            }
+        }
+        picturesTableView.scrollEnabled = true
+    }*/
+    
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if let len = completedImages?.count {
+            return len
+        }
+        return 0
+    }
+    
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("CompletedWork", forIndexPath: indexPath) as! CompletedWorkCollectionViewCell
+        if let picture = completedImages?[indexPath.row] {
+            cell.setupCell(picture, title: picture.friendlyName!)
+        }
+        return cell
+    }
+    
+    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+        if let cell = collectionView.cellForItemAtIndexPath(indexPath) as? CompletedWorkCollectionViewCell {
+            goToViewWorkInProgressWithImageID(cell.imageID)
+        }
+    }
+    
+//    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+//        if (segue.identifier == "showPictureVCSegue") {
+//            if let picture = sender as? Picture, vc = segue.destinationViewController as? PictureDrawViewController {
+//                vc.setPicture(picture, sDelegate: self.socketDelegate)
+//            }
+//        }
+//        else if (segue.identifier == "showPictureProgressSegue") {
+//            if let picture = sender as? Picture, vc = segue.destinationViewController as? ImageProgressViewController {
+//                vc.setupImageProgressView(picture, sDelegate: self.socketDelegate)
+//            }
+//        }
+//    }
 }
