@@ -58,7 +58,7 @@
               <button type="button" ng-click="colors.splice($index, 1)">-</button>
               <input type="text" ng-model="colors[$index]" maxlength="6"/>
             </li>
-            <li><button type="button" ng-click="colors.push('000000')">+</button></li>
+            <li ng-show="colors.length < 10"><button type="button" ng-click="colors.push('000000')">+</button></li>
           </ol>
 
         </div>
