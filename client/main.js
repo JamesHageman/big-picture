@@ -351,7 +351,7 @@
                 }
             );
 
-            gallery_obj.data("_id", image_object.inProgress[i]._id);
+            gallery_obj.data("_id", image_object.complete[i]._id);
             gallery_obj.click(function () {
                 window.location.href = "/image.html?id=" + $(this).data("_id");
             })
