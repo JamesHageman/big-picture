@@ -233,7 +233,15 @@ export function getFullImage(imageId) {
 export function getImages() {
   return Promise.all([
     Image.find({ complete: true }).exec(),
-    Image.find({ complete: { $ne: true } }).exec()
+    Image.find({ complete: { $ne: true } }).exec().then(images => {
+      return Promise.all(images.map(i => {
+        return i.calculatePercentComplete().then((percent) => {
+          i = i.toJSON()
+          i.percent = percent
+          return i
+        })
+      }))
+    })
   ]).then(([complete, inProgress]) => {
     return {
       complete,
