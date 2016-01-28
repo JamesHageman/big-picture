@@ -6,9 +6,12 @@
     var GW;
     var GH;
 
-    var socket = io.connect(
-      window.location.host.startsWith('localhost') ? 'http://192.168.43.150:8080/' : '/'
-    );
+    function getRootUrl() {
+      // window.location.host.startsWith('localhost') ? 'http://192.168.43.150:8080/' : '/'
+      return '/';
+    }
+
+    var socket = io.connect(getRootUrl());
 
     //-------------------------- VARS -------------------------//
 
@@ -303,8 +306,8 @@
 
             contribute.css({cursor:"pointer"});
 
-            
-            var percentColor = getColorByPercent(image_object.inProgress[i].percent); 
+
+            var percentColor = getColorByPercent(image_object.inProgress[i].percent);
             contribute.css({"background-color":percentColor});
 
             contribute.data("percent", image_object.inProgress[i].percent);
@@ -340,7 +343,7 @@
             gallery_obj.append(name);
 
             // thumb
-            var img = $("<img src='" + (window.location.host.startsWith('localhost') ? 'http://192.168.43.150:8080/' : '/') + image_object.complete[i].fileName + "'>")
+            var img = $("<img src='" + (getRootUrl()) + image_object.complete[i].fileName + "'>")
             gallery_obj.append(img);
 
             gallery_obj.hover(
@@ -664,7 +667,7 @@
         initColorButtons();
 
         // load image
-        image = getImage((window.location.host.startsWith('localhost') ? 'http://192.168.43.150:8080' : '') + picture_obj.imageURL);
+        image = getImage((getRootUrl()) + picture_obj.imageURL.slice(1));
 
         picture_id = picture_obj._id;
 

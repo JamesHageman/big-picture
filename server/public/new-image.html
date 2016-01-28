@@ -127,9 +127,9 @@
             },
             method: 'POST'
           }).then(function (res) {
-            console.log(res);
-          }, function (reason) {
             window.location.href = '/';
+          }, function (reason) {
+            alert('Error: ' + reason)
           });
         } else {
           console.log($scope.newImageForm)
