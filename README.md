@@ -1,6 +1,6 @@
 # BIGpicture
 
-Our project for Waterloohacks 2016. Read all about on [Devpost](http://devpost.com/software/bigpicture).
+Our project for Waterloohacks 2016. Read all about it on [Devpost](http://devpost.com/software/bigpicture).
 
 ## Contributors
 
