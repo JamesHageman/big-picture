@@ -3,6 +3,7 @@
     "node_modules",
     "ios",
     "client",
-    "migrate"
+    "migrate",
+    "cycle"
   ]
 }

@@ -3,3 +3,5 @@ server/.db
 server/db_copy
 server/aws.json
 *.log
+
+cycle/build/bundle.js
